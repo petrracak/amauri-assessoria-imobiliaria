@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/* ===================================================================
+   Amauri Assessoria Imobiliária — design tokens
+   Azuis extraídos da logo: #285088 (marinho) e #1060a8 (acento).
+   O branco é a cor principal da marca, então o claro é o padrão.
+   =================================================================== */
+
+@theme {
+  --color-brand-50: #f1f6fd;
+  --color-brand-100: #dfebf9;
+  --color-brand-200: #c5dbf4;
+  --color-brand-300: #9cc3ec;
+  --color-brand-400: #6ca3e0;
+  --color-brand-500: #4584d3;
+  --color-brand-600: #1060a8;
+  --color-brand-700: #285088;
+  --color-brand-800: #24446f;
+  --color-brand-900: #1d3758;
+  --color-brand-950: #121f33;
+
+  --font-sans: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-base), ui-serif, Georgia, serif;
+
+  /* Curvas: entrada suave, sem "mola" — o site é sóbrio, não saltitante. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Escala modular 1.25 a partir de 1rem, achatada no topo para caber no
+     celular sem quebrar palavra no meio. */
+  --text-display-sm: 1.75rem;
+  --text-display-sm--line-height: 1.15;
+  --text-display-md: 2.5rem;
+  --text-display-md--line-height: 1.08;
+  --text-display-lg: 3.5rem;
+  --text-display-lg--line-height: 1.02;
+  --text-display-xl: 4.75rem;
+  --text-display-xl--line-height: 0.98;
+}
+
+/* ----------------------------------------------------- tema claro */
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f7f8fa;
+  --bg-elevated: #ffffff;
+  --fg: #101723;
+  --fg-muted: #5a6475;
+  --fg-subtle: #8a94a6;
+  --border: #e5e8ee;
+  --border-strong: #d2d7e0;
+  --accent: var(--color-brand-700);
+  --accent-hover: var(--color-brand-600);
+  --accent-fg: #ffffff;
+  --ring: var(--color-brand-600);
+  --shadow-card: 0 1px 2px rgb(16 23 35 / 0.04), 0 8px 24px rgb(16 23 35 / 0.06);
+  --overlay: rgb(16 23 35 / 0.55);
+}
+
+/* ---------------------------------------------------- tema escuro */
+.dark {
+  --bg: #0b1220;
+  --bg-subtle: #111a2b;
+  --bg-elevated: #152036;
+  --fg: #e9eef7;
+  --fg-muted: #a3b0c4;
+  --fg-subtle: #74839b;
+  --border: #22304a;
+  --border-strong: #31425f;
+  --accent: #5da0e8;
+  --accent-hover: #86bcf2;
+  --accent-fg: #0b1220;
+  --ring: #5da0e8;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
+  --overlay: rgb(5 9 16 / 0.7);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border-base: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Foco visível só no teclado, nunca no toque. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Respiro lateral consistente; no celular o conteúdo nunca encosta na borda. */
+  .container-site {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+    max-width: 80rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-site {
+      padding-inline: 2rem;
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Preço, área, dormitórios: numeral de largura fixa não "dança" na troca. */
+  .numeros {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ---------------------------------------------------------------
+     Encontro das águas: o campo tonal vira numa linha nítida, nunca
+     num degradê. É a transição entre seções do site inteiro.
+     --------------------------------------------------------------- */
+  /* No claro, o campo escuro contrasta com a página. No escuro ele precisa
+     subir um tom, senão a faixa some no fundo e a linha perde a função. */
+  .dark .campo-tinta {
+    background-color: #16223a;
+  }
+
+  .campo-tinta {
+    background-color: var(--color-brand-950);
+    color: #eaf0f8;
+    --fg: #eaf0f8;
+    --fg-muted: #9fb0c8;
+    --fg-subtle: #7286a3;
+    --border: #22304a;
+    --accent: #7fb3ee;
+    --accent-fg: var(--color-brand-950);
+  }
+
+  .linha-encontro {
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .campo-tinta .linha-encontro {
+    border-top-color: #2b3c5a;
+  }
+}

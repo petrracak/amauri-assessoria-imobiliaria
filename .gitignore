@@ -1,0 +1,24 @@
+# Segredos — nunca enviar para o repositório
+.env*
+.mcp.local.json
+.claude/settings.local.json
+.vercel
+
+# O exemplo é documentação e não tem valor nenhum dentro.
+# Precisa vir depois de .env* para a exceção valer.
+!.env.example
+
+# Dependências e build
+node_modules/
+.next/
+dist/
+build/
+out/
+
+# TypeScript — gerados pelo Next a cada build
+*.tsbuildinfo
+next-env.d.ts
+
+# Sistema
+.DS_Store
+*.log
