@@ -10,6 +10,8 @@ import { exigirPerfil } from "@/lib/auth";
 export const metadata: Metadata = {
   title: { default: "Painel", template: "%s | Painel Amauri" },
   robots: { index: false, follow: false },
+  // Instalar estando no painel dá um app que abre no painel, não na home.
+  manifest: "/painel.webmanifest",
 };
 
 export default async function AdminLayout({

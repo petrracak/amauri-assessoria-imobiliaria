@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Newsreader } from "next/font/google";
 
+import { ServiceWorker } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
 
 import "./globals.css";
@@ -37,6 +38,16 @@ export const metadata: Metadata = {
     siteName: "Amauri Assessoria Imobiliária",
   },
   robots: { index: true, follow: true },
+  icons: {
+    icon: "/icone-192.png",
+    // O iOS ignora o manifesto para o ícone da tela inicial.
+    apple: "/apple-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Amauri",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
@@ -59,6 +70,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
         </ThemeProvider>
+        <ServiceWorker />
       </body>
     </html>
   );

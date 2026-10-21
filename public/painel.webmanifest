@@ -1,0 +1,38 @@
+{
+  "name": "Painel Amauri",
+  "short_name": "Painel",
+  "description": "Cadastro de imóveis, blog e leads da Amauri Assessoria Imobiliária.",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "id": "/admin",
+  "icons": [
+    { "src": "/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "/icone-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Cadastrar imóvel",
+      "short_name": "Novo imóvel",
+      "url": "/admin/imoveis/novo",
+      "icons": [{ "src": "/icone-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ver leads",
+      "short_name": "Leads",
+      "url": "/admin/leads",
+      "icons": [{ "src": "/icone-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
