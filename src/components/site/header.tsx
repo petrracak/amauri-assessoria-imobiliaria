@@ -9,9 +9,9 @@ import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
-// O blog entra aqui junto com o painel, na próxima etapa.
 const NAV = [
   { href: "/imoveis", label: "Imóveis" },
+  { href: "/blog", label: "Blog" },
   { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
 ];

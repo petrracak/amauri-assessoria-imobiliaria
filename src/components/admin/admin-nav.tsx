@@ -1,6 +1,13 @@
 "use client";
 
-import { Building2, LayoutDashboard, type LucideIcon, Settings, Users } from "lucide-react";
+import {
+  Building2,
+  LayoutDashboard,
+  type LucideIcon,
+  Newspaper,
+  Settings,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +18,7 @@ type Item = { href: string; label: string; icone: LucideIcon; somenteAdmin?: boo
 const ITENS: Item[] = [
   { href: "/admin", label: "Painel", icone: LayoutDashboard },
   { href: "/admin/imoveis", label: "Imóveis", icone: Building2 },
+  { href: "/admin/posts", label: "Blog", icone: Newspaper },
   { href: "/admin/leads", label: "Leads", icone: Users },
   { href: "/admin/configuracoes", label: "Configurações", icone: Settings, somenteAdmin: true },
 ];

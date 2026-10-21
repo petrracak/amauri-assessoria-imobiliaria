@@ -4,8 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Renova a sessão a cada request e protege /admin.
  * Server Components não escrevem cookie, então a renovação acontece aqui.
+ *
+ * Chamava-se `middleware` até o Next 15; no 16 a convenção é `proxy`,
+ * que roda sempre no runtime Node.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

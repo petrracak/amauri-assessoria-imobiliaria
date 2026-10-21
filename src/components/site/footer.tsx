@@ -16,6 +16,7 @@ const COLUNAS = [
     titulo: "A assessoria",
     links: [
       { href: "/sobre", label: "Sobre o Amauri" },
+      { href: "/blog", label: "Blog" },
       { href: "/contato", label: "Contato" },
     ],
   },
