@@ -2,12 +2,11 @@ import type { MetadataRoute } from "next";
 
 import { getPosts } from "@/lib/blog";
 import { getImoveis } from "@/lib/queries";
+import { siteUrl } from "@/lib/site";
 
 export const revalidate = 3600;
 
-const base = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.amaurinobre.com.br"
-).replace(/\/$/, "");
+const base = siteUrl;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const fixas: MetadataRoute.Sitemap = [

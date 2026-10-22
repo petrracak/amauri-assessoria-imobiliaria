@@ -3,6 +3,7 @@ import { Archivo, Newsreader } from "next/font/google";
 
 import { ServiceWorker } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ehEnderecoTemporario, siteUrl } from "@/lib/site";
 
 import "./globals.css";
 
@@ -21,7 +22,7 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.amaurinobre.com.br";
+
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -37,7 +38,9 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     siteName: "Amauri Assessoria Imobiliária",
   },
-  robots: { index: true, follow: true },
+  robots: ehEnderecoTemporario
+    ? { index: false, follow: false }
+    : { index: true, follow: true },
   icons: {
     icon: "/icone-192.png",
     // O iOS ignora o manifesto para o ícone da tela inicial.
