@@ -159,7 +159,6 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
         whatsapp={whatsapp}
         telefone={config.contato.telefone_exibicao}
         instagram={config.contato.instagram}
-        creci={config.contato.creci}
       />
     </>
   );

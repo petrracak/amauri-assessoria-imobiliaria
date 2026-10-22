@@ -30,7 +30,8 @@ export function Header({ whatsapp }: { whatsapp: string }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-base bg-bg/85 backdrop-blur-md">
-      <div className="container-site flex h-[4.5rem] items-center justify-between gap-6">
+      {/* Altura maior no desktop: a marca tem assinatura embaixo e precisa de ar. */}
+      <div className="container-site flex h-[4.75rem] items-center justify-between gap-6 lg:h-24">
         <Logo />
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -81,7 +82,7 @@ export function Header({ whatsapp }: { whatsapp: string }) {
       </div>
 
       {aberto && (
-        <div className="fixed inset-x-0 top-[4.5rem] bottom-0 z-50 border-t border-border-base bg-bg md:hidden">
+        <div className="fixed inset-x-0 top-[4.75rem] bottom-0 z-50 border-t border-border-base bg-bg md:hidden">
           <nav className="container-site flex flex-col pt-2">
             {NAV.map((item) => (
               <Link

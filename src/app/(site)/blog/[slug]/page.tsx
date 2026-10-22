@@ -165,7 +165,6 @@ export default async function PostPage({ params }: { params: Params }) {
         whatsapp={whatsapp}
         telefone={config.contato.telefone_exibicao}
         instagram={config.contato.instagram}
-        creci={config.contato.creci}
       />
     </>
   );

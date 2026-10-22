@@ -26,7 +26,7 @@ export default async function AdminLayout({
       <header className="sticky top-0 z-40 border-b border-border-base bg-bg/90 backdrop-blur-md">
         <div className="flex h-16 items-center justify-between gap-4 px-5">
           <div className="flex items-center gap-5">
-            <Logo href="/admin" className="scale-90 origin-left" />
+            <Logo href="/admin" tamanho="sm" />
             <Link
               href="/"
               target="_blank"

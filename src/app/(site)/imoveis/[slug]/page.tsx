@@ -232,7 +232,6 @@ export default async function ImovelPage({ params }: { params: Params }) {
         whatsapp={whatsappGeral}
         telefone={config.contato.telefone_exibicao}
         instagram={config.contato.instagram}
-        creci={config.contato.creci}
       />
     </>
   );

@@ -26,22 +26,20 @@ export function Footer({
   whatsapp,
   telefone,
   instagram,
-  creci,
 }: {
   whatsapp: string;
   telefone: string;
   instagram: string;
-  creci: string;
 }) {
   return (
     <footer className="campo-tinta">
       <div className="container-site grid gap-12 py-16 md:grid-cols-[1.5fr_1fr_1fr_1.2fr] md:py-20">
         <div>
-          <Logo href={null} />
+          {/* O rodapé é sempre campo escuro, então a versão clara é fixa. */}
+          <Logo href={null} branca />
           <p className="mt-5 max-w-[34ch] text-sm leading-relaxed text-fg-muted">
             Assessoria na compra e na venda de imóveis em Santarém, no Pará.
           </p>
-          <p className="numeros mt-5 text-xs text-fg-subtle">CRECI {creci}</p>
         </div>
 
         {COLUNAS.map((coluna) => (

@@ -177,7 +177,6 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
         whatsapp={whatsapp}
         telefone={config.contato.telefone_exibicao}
         instagram={config.contato.instagram}
-        creci={config.contato.creci}
       />
     </>
   );

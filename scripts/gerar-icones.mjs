@@ -1,63 +1,84 @@
 /**
- * Gera os ícones do PWA a partir de SVG, sem depender de fonte instalada:
- * o "A" é desenhado com traços, não com texto.
+ * Gera os arquivos de marca usados pelo site, a partir dos originais em
+ * assets/marca/.
  *
  *   node scripts/gerar-icones.mjs
  *
- * Provisório até a logo oficial chegar — troque os arquivos em public/
- * mantendo os mesmos nomes e nada mais precisa mudar.
+ * Rode de novo sempre que um original mudar. Os arquivos em public/ são
+ * saída deste script — não edite à mão.
  */
 import { mkdir, writeFile } from "node:fs/promises";
 
 import sharp from "sharp";
 
-const NAVY = "#121F33";
-const AZUL = "#1060A8";
+const ORIGEM = "assets/marca";
+const AZUL = "#1868a8"; // cor dominante do ícone oficial
 
-/**
- * @param {number} escala fração do lado ocupada pelo monograma.
- *   Ícone maskable precisa de folga: o sistema recorta as bordas.
- */
-function svg(escala) {
-  const L = 512;
-  const c = L / 2;
-  const t = (L * escala) / 2; // meia-altura do monograma
+/** Tira a margem transparente e redimensiona pela largura. */
+async function logo(origem, destino, largura) {
+  const png = await sharp(`${ORIGEM}/${origem}`)
+    .trim({ threshold: 1 })
+    .resize({ width: largura, withoutEnlargement: true })
+    .png({ compressionLevel: 9, palette: true })
+    .toBuffer();
 
-  const topo = c - t;
-  const base = c + t;
-  const meiaLargura = t * 0.92;
-  const traco = t * 0.34;
-  const barraY = c + t * 0.42;
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${L}" height="${L}" viewBox="0 0 ${L} ${L}">
-  <rect width="${L}" height="${L}" fill="${NAVY}"/>
-  <rect y="${L * 0.62}" width="${L}" height="${L * 0.38}" fill="${AZUL}" opacity="0.28"/>
-  <line x1="0" y1="${L * 0.62}" x2="${L}" y2="${L * 0.62}" stroke="${AZUL}" stroke-width="${L * 0.012}"/>
-  <g stroke="#ffffff" stroke-width="${traco}" stroke-linecap="round" fill="none">
-    <line x1="${c}" y1="${topo}" x2="${c - meiaLargura}" y2="${base}"/>
-    <line x1="${c}" y1="${topo}" x2="${c + meiaLargura}" y2="${base}"/>
-    <line x1="${c - meiaLargura * 0.52}" y1="${barraY}" x2="${c + meiaLargura * 0.52}" y2="${barraY}"/>
-  </g>
-</svg>`;
+  await writeFile(destino, png);
+  const { width, height } = await sharp(png).metadata();
+  return { destino, dim: `${width}×${height}`, kb: png.length / 1024 };
 }
 
-const padrao = Buffer.from(svg(0.62));
-const folgado = Buffer.from(svg(0.44)); // maskable: 80% de área segura
+async function icone(destino, lado) {
+  const png = await sharp(`${ORIGEM}/icone.webp`)
+    .resize(lado, lado, { fit: "cover" })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
 
-const saidas = [
-  { arquivo: "public/icone-192.png", fonte: padrao, lado: 192 },
-  { arquivo: "public/icone-512.png", fonte: padrao, lado: 512 },
-  { arquivo: "public/icone-maskable-512.png", fonte: folgado, lado: 512 },
-  { arquivo: "public/apple-icon.png", fonte: padrao, lado: 180 },
-  { arquivo: "src/app/icon.png", fonte: padrao, lado: 64 },
-];
+  await writeFile(destino, png);
+  return { destino, dim: `${lado}×${lado}`, kb: png.length / 1024 };
+}
+
+/**
+ * Maskable: o sistema recorta as bordas num círculo ou squircle. O ícone
+ * oficial já tem cantos arredondados, então ele entra reduzido sobre um
+ * fundo cheio, para nada importante cair fora da área segura.
+ */
+async function iconeMaskable(destino, lado = 512) {
+  const seguro = Math.round(lado * 0.78);
+  const miolo = await sharp(`${ORIGEM}/icone.webp`)
+    .resize(seguro, seguro, { fit: "cover" })
+    .toBuffer();
+
+  const png = await sharp({
+    create: {
+      width: lado,
+      height: lado,
+      channels: 4,
+      background: AZUL,
+    },
+  })
+    .composite([{ input: miolo, gravity: "center" }])
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+
+  await writeFile(destino, png);
+  return { destino, dim: `${lado}×${lado}`, kb: png.length / 1024 };
+}
 
 await mkdir("public", { recursive: true });
 
-for (const { arquivo, fonte, lado } of saidas) {
-  const png = await sharp(fonte).resize(lado, lado).png({ compressionLevel: 9 }).toBuffer();
-  await writeFile(arquivo, png);
-  console.log(`${arquivo.padEnd(32)} ${lado}×${lado}  ${(png.length / 1024).toFixed(1)} KB`);
+const saidas = [
+  await logo("logo-colorida.webp", "public/logo-amauri.png", 720),
+  await logo("logo-branca.webp", "public/logo-amauri-branca.png", 720),
+  await logo("simbolo-colorido.webp", "public/simbolo-amauri.png", 400),
+  await icone("public/icone-192.png", 192),
+  await icone("public/icone-512.png", 512),
+  await icone("public/apple-icon.png", 180),
+  await icone("src/app/icon.png", 64),
+  await iconeMaskable("public/icone-maskable-512.png"),
+];
+
+for (const s of saidas) {
+  console.log(`${s.destino.padEnd(34)} ${s.dim.padEnd(11)} ${s.kb.toFixed(1)} KB`);
 }
 
-console.log("\nÍcones gerados.");
+console.log("\nArquivos de marca gerados.");

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* No Tailwind 4 o `dark:` segue prefers-color-scheme por padrão, mas o tema
+   aqui é escolhido pelo usuário e aplicado como classe pelo next-themes.
+   Sem isto, utilitário e token de cor discordam: a página fica clara e o
+   `dark:hidden` acha que está escuro. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ===================================================================
    Amauri Assessoria Imobiliária — design tokens
    Azuis extraídos da logo: #285088 (marinho) e #1060a8 (acento).
