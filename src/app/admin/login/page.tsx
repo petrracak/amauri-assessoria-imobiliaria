@@ -10,6 +10,10 @@ import { createClient } from "@/lib/supabase/client";
 const MENSAGENS: Record<string, string> = {
   "link-invalido": "Esse link não é válido. Peça um novo abaixo.",
   "link-expirado": "O link expirou. Peça um novo abaixo.",
+  "sem-acesso": "Esse e-mail não tem acesso ao painel. Fale com o administrador.",
+  // PKCE: o link só vale no navegador que pediu.
+  "outro-navegador":
+    "Abra o link no mesmo aparelho em que você pediu o acesso, ou peça um novo aqui.",
 };
 
 function Formulario() {
