@@ -38,14 +38,25 @@ async function icone(destino, lado) {
 }
 
 /**
- * Maskable: o sistema recorta as bordas num círculo ou squircle. O ícone
- * oficial já tem cantos arredondados, então ele entra reduzido sobre um
- * fundo cheio, para nada importante cair fora da área segura.
+ * Maskable: o sistema recorta as bordas num círculo ou squircle, então o
+ * fundo precisa ser cheio. Usa o símbolo branco sobre o azul da marca —
+ * reaproveitar o ícone pronto deixaria um quadrado arredondado dentro de
+ * outro, visível depois do recorte.
  */
 async function iconeMaskable(destino, lado = 512) {
-  const seguro = Math.round(lado * 0.78);
-  const miolo = await sharp(`${ORIGEM}/icone.webp`)
-    .resize(seguro, seguro, { fit: "cover" })
+  const seguro = Math.round(lado * 0.56); // 80% de área segura, com folga
+
+  // O arquivo do símbolo traz a assinatura embaixo, ilegível neste tamanho.
+  // Entre o triângulo e o texto há uma faixa vazia: corta ali.
+  const aparado = await sharp(`${ORIGEM}/simbolo-branco.webp`)
+    .trim({ threshold: 1 })
+    .toBuffer();
+  const { width: largura } = await sharp(aparado).metadata();
+
+  const miolo = await sharp(aparado)
+    .extract({ left: 0, top: 0, width: largura, height: 1353 })
+    .trim({ threshold: 1 })
+    .resize({ height: seguro, fit: "inside" })
     .toBuffer();
 
   const png = await sharp({
