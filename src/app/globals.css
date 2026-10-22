@@ -26,7 +26,7 @@
   --color-brand-950: #121f33;
 
   --font-sans: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-display-base), ui-serif, Georgia, serif;
+  --font-display: var(--font-display-base), ui-sans-serif, system-ui, sans-serif;
 
   /* Curvas: entrada suave, sem "mola" — o site é sóbrio, não saltitante. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -47,7 +47,8 @@
 /* ----------------------------------------------------- tema claro */
 :root {
   --bg: #ffffff;
-  --bg-subtle: #f7f8fa;
+  /* Cinza prata, não creme: o creme é o fundo que todo site gerado usa. */
+  --bg-subtle: #eef0f3;
   --bg-elevated: #ffffff;
   --fg: #101723;
   --fg-muted: #5a6475;
@@ -135,7 +136,179 @@
   }
 }
 
+@layer base {
+  /* Títulos expandidos: é o que dá porte arquitetônico à página. O eixo de
+     largura do Archivo faz isso sem distorcer a letra. */
+  .font-display {
+    font-stretch: 112%;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+}
+
+/* ------------------------------------------------- cortina de abertura */
+/* Fora de @layer: precisa vencer sem disputa de especificidade, e some
+   antes da hidratação quando a sessão já viu. */
+html[data-intro="visto"] #intro {
+  display: none;
+}
+
+#intro {
+  transition:
+    transform 0.8s var(--ease-in-out-soft),
+    opacity 0.8s var(--ease-in-out-soft);
+}
+
+#intro[data-saindo] {
+  transform: translateY(-101%);
+  opacity: 0.6;
+}
+
+.intro-marca {
+  animation: intro-marca 0.9s var(--ease-out-soft) both;
+}
+
+.intro-linha {
+  animation: intro-linha 1s var(--ease-out-soft) 0.25s both;
+}
+
+@keyframes intro-marca {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes intro-linha {
+  from {
+    width: 0;
+  }
+  to {
+    width: 7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #intro {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------ microanimações */
+/* Entrada da primeira dobra: um movimento orquestrado, escalonado por
+   linha. Começa depois da cortina sair, para não acontecer escondido. */
+.hero-item {
+  animation: sobe 0.8s var(--ease-out-soft) both;
+}
+.hero-item:nth-child(1) {
+  animation-delay: 1.05s;
+}
+.hero-item:nth-child(2) {
+  animation-delay: 1.15s;
+}
+.hero-item:nth-child(3) {
+  animation-delay: 1.25s;
+}
+.hero-item:nth-child(4) {
+  animation-delay: 1.35s;
+}
+.hero-item:nth-child(5) {
+  animation-delay: 1.5s;
+}
+
+html[data-intro="visto"] .hero-item {
+  animation-delay: 0.1s;
+}
+
+.menu-item {
+  animation: sobe 0.45s var(--ease-out-soft) both;
+}
+
+.zap-flutuante {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96);
+  pointer-events: none;
+  transition:
+    opacity 0.45s var(--ease-out-soft),
+    transform 0.45s var(--ease-out-soft);
+}
+
+.zap-flutuante[data-visivel] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Uma entrada por seção, não por elemento: movimento demais vira ruído. */
+.revela {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+}
+
+.revela[data-visivel] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes sobe {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revela,
+  .menu-item,
+  .hero-item {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
 @layer utilities {
+  /* -----------------------------------------------------------------
+     Fotografia em preto e branco que ganha cor na interação.
+     Além do efeito, resolve um problema real: as fotos vieram de fontes
+     diferentes, com luz e cor desencontradas. Dessaturar unifica o
+     conjunto; a cor volta quando a pessoa demonstra interesse.
+     ----------------------------------------------------------------- */
+  .foto-sobria img,
+  img.foto-sobria {
+    filter: grayscale(1) contrast(1.04);
+    transition:
+      filter 0.6s var(--ease-out-soft),
+      transform 0.8s var(--ease-out-soft);
+  }
+
+  .group:hover .foto-sobria img,
+  .group:focus-visible .foto-sobria img,
+  .group:hover img.foto-sobria,
+  .group:focus-visible img.foto-sobria,
+  .foto-sobria:hover img {
+    filter: grayscale(0) contrast(1);
+  }
+
+  /* No toque não existe hover: a cor entra quando o card aparece. */
+  @media (hover: none) {
+    .foto-sobria img,
+    img.foto-sobria {
+      filter: none;
+    }
+  }
+
   /* Respiro lateral consistente; no celular o conteúdo nunca encosta na borda. */
   .container-site {
     width: 100%;

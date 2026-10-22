@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, Newsreader } from "next/font/google";
+import { Archivo, DM_Sans } from "next/font/google";
 
 import { ServiceWorker } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -7,17 +7,20 @@ import { ehEnderecoTemporario, siteUrl } from "@/lib/site";
 
 import "./globals.css";
 
-/** Interface e ficha técnica: numerais tabulares alinham preço e área. */
-const archivo = Archivo({
+/** Corpo e interface: desenhada para ritmo de leitura em tela. */
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans-base",
   display: "swap",
 });
 
-/** Títulos e preços: serifada editorial, com itálico de verdade. */
-const newsreader = Newsreader({
+/**
+ * Títulos: grotesca com eixo de largura. Usada expandida, ela tem porte
+ * arquitetônico — vocabulário de incorporadora, não de blog.
+ */
+const archivo = Archivo({
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  axes: ["wdth"],
   variable: "--font-display-base",
   display: "swap",
 });
@@ -67,8 +70,18 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${archivo.variable} ${newsreader.variable}`}
+      className={`${dmSans.variable} ${archivo.variable}`}
     >
+      <head>
+        {/* Roda antes da pintura: quem já viu a abertura nesta sessão não
+            chega a enxergar um piscar dela. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{if(sessionStorage.getItem('amauri:intro'))document.documentElement.dataset.intro='visto'}catch(e){}",
+          }}
+        />
+      </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}

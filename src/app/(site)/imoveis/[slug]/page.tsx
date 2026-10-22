@@ -6,9 +6,10 @@ import { Footer } from "@/components/site/footer";
 import { Gallery } from "@/components/site/gallery";
 import { Header } from "@/components/site/header";
 import { PropertyCard } from "@/components/site/property-card";
+import { specsDe, type Spec } from "@/components/site/specs";
 import { getImoveis, getImovel } from "@/lib/queries";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
-import { formatArea, formatPreco } from "@/lib/utils";
+import { formatPreco } from "@/lib/utils";
 
 export const revalidate = 300;
 
@@ -36,13 +37,16 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-function Ficha({ itens }: { itens: { rotulo: string; valor: string }[] }) {
+function Ficha({ specs }: { specs: Spec[] }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-8 border-y border-border-base sm:grid-cols-3">
-      {itens.map((item) => (
-        <div key={item.rotulo} className="border-b border-border-base py-4 last:border-b-0 sm:border-b">
-          <dt className="text-xs text-fg-subtle">{item.rotulo}</dt>
-          <dd className="numeros mt-1 text-lg">{item.valor}</dd>
+    <dl className="grid grid-cols-2 gap-px border border-border-base bg-border-base sm:grid-cols-3 lg:grid-cols-5">
+      {specs.map(({ chave, valor, rotulo, Icone }) => (
+        <div key={chave} className="bg-bg px-5 py-6">
+          <Icone className="size-6 text-accent" strokeWidth={1.25} />
+          <dd className="numeros mt-4 font-display text-2xl leading-none">
+            {valor}
+          </dd>
+          <dt className="mt-1.5 text-sm text-fg-muted">{rotulo}</dt>
         </div>
       ))}
     </dl>
@@ -68,17 +72,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
   const doImovel = caracteristicas.filter((c) => c.grupo === "imovel");
   const doEmpreendimento = caracteristicas.filter((c) => c.grupo === "empreendimento");
 
-  const ficha = [
-    imovel.dormitorios && { rotulo: "Dormitórios", valor: String(imovel.dormitorios) },
-    imovel.suites && { rotulo: "Suítes", valor: String(imovel.suites) },
-    imovel.banheiros && { rotulo: "Banheiros", valor: String(imovel.banheiros) },
-    imovel.vagas && { rotulo: "Vagas", valor: String(imovel.vagas) },
-    imovel.area_privativa && {
-      rotulo: "Área privativa",
-      valor: formatArea(imovel.area_privativa)!,
-    },
-    imovel.area_total && { rotulo: "Área total", valor: formatArea(imovel.area_total)! },
-  ].filter(Boolean) as { rotulo: string; valor: string }[];
+  const specs = specsDe(imovel);
 
   const semelhantes = (
     await getImoveis({ tipo: imovel.tipo, bairro: imovel.bairro ?? undefined }, 4)
@@ -146,10 +140,10 @@ export default async function ImovelPage({ params }: { params: Params }) {
           </aside>
         </div>
 
-        {ficha.length > 0 ? (
+        {specs.length > 0 ? (
           <section className="mt-14">
             <h2 className="sr-only">Ficha técnica</h2>
-            <Ficha itens={ficha} />
+            <Ficha specs={specs} />
           </section>
         ) : null}
 

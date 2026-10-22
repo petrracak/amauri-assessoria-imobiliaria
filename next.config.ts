@@ -7,8 +7,11 @@ const nextConfig: NextConfig = {
   // dados vindos do Supabase. Sem cacheComponents, que exigiria Suspense em
   // cada leitura; partialPrefetching depende dele, então também fica fora.
   images: {
-    // AVIF primeiro: as fotos de imóvel são o peso da página no celular.
-    formats: ["image/avif", "image/webp"],
+    // O otimizador da Vercel tem cota no plano free e estourou com as fotos
+    // da importação, devolvendo 402. As fotos já são guardadas em WebP e em
+    // dois tamanhos no Storage, então o carregador só escolhe qual servir.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
     remotePatterns: [
       {
         protocol: "https",

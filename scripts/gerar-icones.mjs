@@ -14,6 +14,26 @@ import sharp from "sharp";
 const ORIGEM = "assets/marca";
 const AZUL = "#1868a8"; // cor dominante do ícone oficial
 
+/**
+ * Só o triângulo, sem a assinatura — usado na abertura animada do site.
+ * Entre o símbolo e o texto há uma faixa vazia; o corte é ali.
+ */
+async function simbolo(origem, destino, altura) {
+  const aparado = await sharp(`${ORIGEM}/${origem}`).trim({ threshold: 1 }).toBuffer();
+  const { width } = await sharp(aparado).metadata();
+
+  const png = await sharp(aparado)
+    .extract({ left: 0, top: 0, width, height: 1353 })
+    .trim({ threshold: 1 })
+    .resize({ height: altura, withoutEnlargement: true })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+
+  await writeFile(destino, png);
+  const m = await sharp(png).metadata();
+  return { destino, dim: `${m.width}×${m.height}`, kb: png.length / 1024 };
+}
+
 /** Tira a margem transparente e redimensiona pela largura. */
 async function logo(origem, destino, largura) {
   const png = await sharp(`${ORIGEM}/${origem}`)
@@ -81,6 +101,7 @@ const saidas = [
   await logo("logo-colorida.webp", "public/logo-amauri.png", 720),
   await logo("logo-branca.webp", "public/logo-amauri-branca.png", 720),
   await logo("simbolo-colorido.webp", "public/simbolo-amauri.png", 400),
+  await simbolo("simbolo-branco.webp", "public/simbolo-branco.png", 320),
   await icone("public/icone-192.png", 192),
   await icone("public/icone-512.png", 512),
   await icone("public/apple-icon.png", 180),

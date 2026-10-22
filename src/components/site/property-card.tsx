@@ -1,67 +1,58 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+import { SpecsLinha, specsDe } from "@/components/site/specs";
 import type { ImovelCard } from "@/lib/queries";
-import { cn, formatArea, formatPreco } from "@/lib/utils";
-
-function Especificacao({ valor, rotulo }: { valor: string; rotulo: string }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="numeros text-sm text-fg">{valor}</span>
-      <span className="text-[0.6875rem] text-fg-subtle">{rotulo}</span>
-    </div>
-  );
-}
+import { cn, formatPreco } from "@/lib/utils";
 
 export function PropertyCard({
   imovel,
   prioridade = false,
-  largo = false,
+  formato = "retrato",
 }: {
   imovel: ImovelCard;
   prioridade?: boolean;
-  largo?: boolean;
+  /** "largo" ocupa mais colunas na grade e pede foto panorâmica. */
+  formato?: "retrato" | "largo" | "alto";
 }) {
   const [indice, setIndice] = useState(0);
 
   const fotos = imovel.imagens?.length ? imovel.imagens : [];
   const foto = fotos[indice] ?? fotos[0];
   const temSegunda = fotos.length > 1;
+  const specs = specsDe(imovel);
 
-  const area = imovel.area_privativa ?? imovel.area_total;
-  const specs = [
-    imovel.dormitorios
-      ? { valor: String(imovel.dormitorios), rotulo: imovel.dormitorios === 1 ? "quarto" : "quartos" }
-      : null,
-    imovel.suites ? { valor: String(imovel.suites), rotulo: imovel.suites === 1 ? "suíte" : "suítes" } : null,
-    imovel.vagas ? { valor: String(imovel.vagas), rotulo: imovel.vagas === 1 ? "vaga" : "vagas" } : null,
-    area ? { valor: formatArea(area)!, rotulo: imovel.area_privativa ? "privativos" : "de terreno" } : null,
-  ].filter(Boolean) as { valor: string; rotulo: string }[];
+  const proporcao =
+    formato === "largo"
+      ? "aspect-[16/10]"
+      : formato === "alto"
+        ? "aspect-[3/4]"
+        : "aspect-[4/3]";
 
   return (
     <Link
       href={`/imoveis/${imovel.slug}`}
-      className="group block"
+      className="group flex h-full flex-col overflow-hidden border border-border-base bg-bg-elevated transition-colors duration-500 hover:border-border-strong"
       onMouseEnter={() => temSegunda && setIndice(1)}
       onMouseLeave={() => setIndice(0)}
     >
-      <div
-        className={cn(
-          "relative overflow-hidden bg-bg-subtle",
-          largo ? "aspect-[16/10]" : "aspect-[4/3]",
-        )}
-      >
+      <div className={cn("foto-sobria relative overflow-hidden bg-bg-subtle", proporcao)}>
         {foto ? (
           <Image
             src={foto.url}
             alt={foto.alt ?? imovel.titulo}
             fill
             priority={prioridade}
-            sizes={largo ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"}
-            className="object-cover transition-opacity duration-500"
+            sizes={
+              formato === "largo"
+                ? "(max-width: 768px) 100vw, 66vw"
+                : "(max-width: 768px) 100vw, 33vw"
+            }
+            className="object-cover"
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-fg-subtle">
@@ -69,26 +60,40 @@ export function PropertyCard({
           </div>
         )}
 
-        {imovel.badge ? (
-          <span className="absolute left-4 top-4 bg-bg px-3 py-1.5 text-[0.6875rem] text-fg">
-            {imovel.badge}
-          </span>
-        ) : null}
+        {/* Selo e contagem ficam sobre a foto, no padrão da referência. */}
+        <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
+          {imovel.badge ? (
+            <span className="bg-bg px-3 py-1.5 text-[0.6875rem] uppercase tracking-wider text-fg">
+              {imovel.badge}
+            </span>
+          ) : imovel.alto_padrao ? (
+            <span className="bg-bg/90 px-3 py-1.5 text-[0.6875rem] uppercase tracking-wider text-fg">
+              Alto padrão
+            </span>
+          ) : (
+            <span />
+          )}
 
-        {/* Quantas fotos esperam no anúncio — informação, não enfeite. */}
-        {fotos.length > 1 ? (
-          <span className="numeros absolute bottom-4 right-4 bg-bg/90 px-2.5 py-1 text-[0.6875rem] text-fg-muted">
-            {fotos.length} fotos
-          </span>
-        ) : null}
+          {fotos.length > 1 ? (
+            <span className="numeros bg-bg/90 px-2.5 py-1 text-[0.6875rem] text-fg-muted">
+              {fotos.length} fotos
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="pt-5">
-        <p className="font-display text-[1.75rem] leading-none tracking-[-0.015em] numeros">
-          {formatPreco(imovel.preco)}
-        </p>
+      <div className="flex flex-1 flex-col p-5 lg:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <p className="numeros font-display text-[1.6rem] leading-none text-fg">
+            {formatPreco(imovel.preco)}
+          </p>
+          <ArrowUpRight
+            className="mt-0.5 size-5 shrink-0 text-fg-subtle transition-all duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+            strokeWidth={1.5}
+          />
+        </div>
 
-        <h3 className="mt-3 text-pretty text-[0.9375rem] leading-snug text-fg transition-colors group-hover:text-accent">
+        <h3 className="mt-3 text-pretty text-[0.9375rem] leading-snug text-fg">
           {imovel.titulo}
         </h3>
 
@@ -98,11 +103,11 @@ export function PropertyCard({
         </p>
 
         {specs.length > 0 ? (
-          <div className="mt-4 flex gap-6 border-t border-border-base pt-4">
-            {specs.map((s) => (
-              <Especificacao key={s.rotulo} valor={s.valor} rotulo={s.rotulo} />
-            ))}
-          </div>
+          <SpecsLinha
+            specs={specs}
+            limite={formato === "largo" ? 5 : 3}
+            className="mt-auto border-t border-border-base pt-4 [margin-top:1.25rem]"
+          />
         ) : null}
       </div>
     </Link>

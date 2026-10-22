@@ -1,5 +1,8 @@
+"use client";
+
 import Script from "next/script";
 
+import { useConsentimento } from "@/lib/consentimento";
 import type { Pixels as PixelsConfig } from "@/lib/settings";
 
 /** Só o que casa com o formato do provedor entra no HTML. */
@@ -11,15 +14,19 @@ function limpo(valor?: string) {
 }
 
 /**
- * Carrega os pixels configurados no painel. Tudo com `afterInteractive`:
- * rastreio não pode atrasar a primeira foto do imóvel aparecendo.
+ * Carrega os pixels configurados no painel, e só depois do aceite de
+ * cookies — é o que a LGPD pede. Tudo com `afterInteractive`: rastreio não
+ * pode atrasar a primeira foto do imóvel aparecendo.
  */
 export function Pixels({ pixels }: { pixels: PixelsConfig }) {
+  const consentimento = useConsentimento();
+
+  if (consentimento !== "aceito") return null;
+
   const meta = limpo(pixels.meta_pixel_id);
   const ga4 = limpo(pixels.ga4_id);
   const gtm = limpo(pixels.gtm_id);
   const ads = limpo(pixels.google_ads_id);
-
   const googleTag = ga4 ?? ads;
 
   return (
