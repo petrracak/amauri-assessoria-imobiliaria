@@ -11,7 +11,7 @@
  */
 export const DOMINIO_EQUIPE = "equipe.amaurinobre.com.br";
 
-/** "Josué Ferreira" -> "josue.ferreira" */
+/** "Maria Souza" -> "maria.souza" */
 export function apelidoDe(nome: string) {
   return nome
     .normalize("NFKD")
@@ -27,7 +27,7 @@ export function apelidoParaEmail(apelido: string) {
   return `${apelido}@${DOMINIO_EQUIPE}`;
 }
 
-/** Aceita "Josué Ferreira", "josue.ferreira" ou um e-mail de verdade. */
+/** Aceita "Maria Souza", "maria.souza" ou um e-mail de verdade. */
 export function loginParaEmail(entrada: string) {
   const limpo = entrada.trim();
   if (limpo.includes("@")) return limpo.toLowerCase();

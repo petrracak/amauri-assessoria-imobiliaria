@@ -29,7 +29,7 @@ function iniciais(nome: string) {
   return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? (partes.at(-1)?.[0] ?? "") : "")).toUpperCase();
 }
 
-/** 93991603517 → (93) 99160-3517 */
+/** 11987654321 → (11) 98765-4321 */
 function formatarTelefone(bruto: string) {
   const d = bruto.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
   if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;

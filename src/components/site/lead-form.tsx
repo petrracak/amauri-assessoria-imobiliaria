@@ -40,6 +40,14 @@ export function LeadForm({
   return (
     <form action={acao} className="w-full">
       <input type="hidden" name="origem" value={origem} />
+      {/* Isca para robôs: fora da tela, fora da ordem de tabulação e sem
+          preenchimento automático. Pessoa de verdade nunca toca nisto. */}
+      <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label>
+          Não preencha este campo
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       {propertyId ? (
         <input type="hidden" name="property_id" value={propertyId} />
       ) : null}

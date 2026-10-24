@@ -2,7 +2,7 @@
  * Define a foto de perfil de alguém da equipe.
  *
  *   node scripts/definir-avatar.mjs <usuario> <arquivo>
- *   node scripts/definir-avatar.mjs josue.ferreira ~/Desktop/josue.jpg
+ *   node scripts/definir-avatar.mjs maria.souza ~/Desktop/maria.jpg
  *
  * Recorta no centro, reduz para 400x400 e grava no perfil. Serve para a
  * carga inicial; no dia a dia cada pessoa troca a própria em Conta.

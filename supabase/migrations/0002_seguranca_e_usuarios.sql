@@ -107,4 +107,4 @@ create unique index if not exists profiles_usuario_idx
   on public.profiles (lower(usuario)) where usuario is not null;
 
 comment on column public.profiles.usuario is
-  'Apelido de acesso (josue.ferreira). Nulo quando a pessoa entra pelo e-mail real.';
+  'Apelido de acesso (maria.souza). Nulo quando a pessoa entra pelo e-mail real.';

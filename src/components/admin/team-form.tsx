@@ -36,7 +36,7 @@ export function TeamForm() {
             required
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            placeholder="Josué Ferreira"
+            placeholder="Maria Souza"
             className={campo}
           />
         </Campo>

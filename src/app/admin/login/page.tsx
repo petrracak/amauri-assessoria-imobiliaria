@@ -136,7 +136,7 @@ function Formulario() {
         autoFocus
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder={modo === "senha" ? "josue.ferreira" : "nome@exemplo.com"}
+        placeholder={modo === "senha" ? "seu.nome" : "nome@exemplo.com"}
         className={entrada}
       />
 

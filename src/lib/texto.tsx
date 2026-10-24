@@ -11,7 +11,8 @@ import type { ReactNode } from "react";
  * **negrito**, *itálico* e [texto](link).
  */
 
-const SEGURO = /^(https?:\/\/|mailto:|tel:|\/)/i;
+// Caminho interno começa com uma barra só: "//dominio" é endereço externo.
+const SEGURO = /^(https?:\/\/|mailto:|tel:|\/(?!\/))/i;
 
 function inline(texto: string, chaveBase: string): ReactNode[] {
   const partes: ReactNode[] = [];

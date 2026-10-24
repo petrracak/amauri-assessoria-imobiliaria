@@ -38,15 +38,17 @@ cria a conta, escolhe entre `admin` e `corretor` e define a primeira senha
 ali mesmo. Administrador enxerga também as configurações e pode apagar
 imóveis.
 
-Pela linha de comando, para o primeiro acesso de um projeto novo:
+Para o primeiro administrador de um projeto novo, ainda não há ninguém para
+abrir `/admin/equipe`. Crie-o pela linha de comando; a partir daí o resto da
+equipe é criada pelo painel:
 
 ```bash
-node scripts/criar-equipe.mjs
+node scripts/criar-usuario.mjs email@exemplo.com "Nome da Pessoa" admin
 ```
 
-As contas nascem sem senha de propósito — quem define a primeira é um
-administrador, pelo painel. Assim a senha não passa por arquivo nem por
-histórico de terminal.
+A conta nasce sem senha de propósito: a primeira é definida em `/admin/conta`,
+pelo link de primeiro acesso que o script imprime. Assim a senha não passa
+por arquivo nem por histórico de terminal.
 
 ## E-mails do painel
 
