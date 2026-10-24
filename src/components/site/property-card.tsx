@@ -3,7 +3,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { ViewTransition, useState } from "react";
 
 import { BotaoFavorito } from "@/components/site/botao-favorito";
 import { SpecsLinha, specsDe } from "@/components/site/specs";
@@ -37,10 +37,17 @@ export function PropertyCard({
   return (
     <Link
       href={`/imoveis/${imovel.slug}`}
-      className="group flex h-full flex-col overflow-hidden border border-border-base bg-bg-elevated transition-colors duration-500 hover:border-border-strong"
+      className={cn(
+        "entra-item group flex h-full flex-col overflow-hidden border border-border-base bg-bg-elevated transition-colors duration-500",
+        "hover:border-border-strong",
+      )}
       onMouseEnter={() => temSegunda && setIndice(1)}
       onMouseLeave={() => setIndice(0)}
     >
+      {/* O nome liga esta foto à mesma foto na ficha: ao abrir o imóvel,
+          ela cresce e se reposiciona em vez de sumir e reaparecer.
+          default="none" impede que ela pisque em transições alheias. */}
+      <ViewTransition name={`imovel-${imovel.ref}`} share="morph" default="none">
       <div className={cn("relative overflow-hidden bg-bg-subtle", proporcao)}>
         {foto ? (
           <Image
@@ -85,6 +92,7 @@ export function PropertyCard({
           </span>
         </div>
       </div>
+      </ViewTransition>
 
       <div className="flex flex-1 flex-col p-5 lg:p-6">
         <div className="flex items-start justify-between gap-4">

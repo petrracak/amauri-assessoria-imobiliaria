@@ -177,7 +177,19 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
             </div>
 
             {imoveis.length > 0 ? (
-              <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+              // A chave muda junto com o filtro: o React remonta a lista e
+              // a entrada escalonada roda de novo, sinalizando a troca.
+              <div
+                key={[
+                  atuais.tipo,
+                  atuais.bairro,
+                  atuais.dormitorios,
+                  atuais.faixa,
+                  atuais.busca,
+                  ordenacao,
+                ].join("|")}
+                className="entra-lista mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3"
+              >
                 {imoveis.map((imovel, i) => (
                   <PropertyCard key={imovel.id} imovel={imovel} prioridade={i < 3} />
                 ))}

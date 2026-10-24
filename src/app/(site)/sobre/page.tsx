@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/site/footer";
+import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getFacetas } from "@/lib/queries";
@@ -24,9 +25,12 @@ export default async function Sobre() {
 
       <main>
         <section className="container-site py-16 lg:py-24">
+          <Revela>
           <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
-            Comprar imóvel não é escolher foto bonita
-          </h1>
+              Comprar imóvel não é escolher foto bonita
+            </h1>
+        </Revela>
+
 
           <div className="mt-10 grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
             <div className="space-y-5 text-pretty leading-relaxed text-fg-muted">

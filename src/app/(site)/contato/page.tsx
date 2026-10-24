@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/site/footer";
+import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
@@ -22,9 +23,12 @@ export default async function Contato() {
       <SiteHeader />
 
       <main className="container-site py-16 lg:py-24">
-        <h1 className="max-w-[18ch] text-balance font-display text-display-sm lg:text-display-lg">
-          Fale com a assessoria
-        </h1>
+        <Revela>
+          <h1 className="max-w-[18ch] text-balance font-display text-display-sm lg:text-display-lg">
+            Fale com a assessoria
+          </h1>
+        </Revela>
+
 
         <div className="mt-12 grid gap-12 lg:grid-cols-2 lg:gap-20">
           <div>

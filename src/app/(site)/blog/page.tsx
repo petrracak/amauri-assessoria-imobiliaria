@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Footer } from "@/components/site/footer";
+import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getCategorias, getPosts, type PostCard } from "@/lib/blog";
@@ -91,13 +92,16 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
       <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
-        <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
-          Antes de comprar, vale entender
-        </h1>
-        <p className="mt-4 max-w-[52ch] text-pretty leading-relaxed text-fg-muted">
-          Financiamento, documentação, mercado de Santarém e o que costuma
-          passar despercebido numa visita.
-        </p>
+        <Revela>
+          <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
+            Antes de comprar, vale entender
+          </h1>
+          <p className="mt-4 max-w-[52ch] text-pretty leading-relaxed text-fg-muted">
+            Financiamento, documentação, mercado de Santarém e o que costuma
+            passar despercebido numa visita.
+          </p>
+        </Revela>
+
 
         {categorias.length > 0 ? (
           <div className="-mx-5 mt-8 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 
 import { BotaoFavorito } from "@/components/site/botao-favorito";
 import { Footer } from "@/components/site/footer";
@@ -95,7 +96,13 @@ export default async function ImovelPage({ params }: { params: Params }) {
         <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr] lg:gap-14">
           {/* min-w-0: sem isso o carrossel estoura a largura da coluna. */}
           <div className="min-w-0">
-            <Gallery fotos={imovel.imagens ?? []} titulo={imovel.titulo} />
+            <ViewTransition
+              name={`imovel-${imovel.ref}`}
+              share="morph"
+              default="none"
+            >
+              <Gallery fotos={imovel.imagens ?? []} titulo={imovel.titulo} />
+            </ViewTransition>
           </div>
 
           {/* Preço e contato acompanham a rolagem no desktop. */}

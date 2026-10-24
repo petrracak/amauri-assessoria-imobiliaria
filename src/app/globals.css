@@ -358,3 +358,50 @@ html[data-intro="visto"] .hero-item {
     animation: none;
   }
 }
+
+/* ---------------------------------------------- transição entre páginas */
+/* A foto do card vira a foto da ficha. O leve desfoque no meio do caminho
+   esconde o serrilhado da interpolação; 420ms é tempo de registrar o
+   movimento sem atrasar quem só quer ver o imóvel. */
+::view-transition-group(.morph) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out-soft);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: morph-desfoque;
+}
+
+@keyframes morph-desfoque {
+  30% {
+    filter: blur(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*) {
+    animation: none !important;
+  }
+}
+
+/* -------------------------------------------- entrada da lista filtrada */
+/* Escalonada e curta, e só quando o filtro muda: é resposta a uma ação da
+   pessoa, mostrando que a lista é outra. Entrada em toda rolagem seria
+   enfeite, e cansaria. */
+.entra-item {
+  animation: sobe 0.5s var(--ease-out-soft) both;
+}
+
+.entra-item:nth-child(2) { animation-delay: 45ms; }
+.entra-item:nth-child(3) { animation-delay: 90ms; }
+.entra-item:nth-child(4) { animation-delay: 135ms; }
+.entra-item:nth-child(5) { animation-delay: 180ms; }
+.entra-item:nth-child(6) { animation-delay: 225ms; }
+.entra-item:nth-child(n + 7) { animation-delay: 260ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .entra-item {
+    animation: none;
+  }
+}
