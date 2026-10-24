@@ -2,6 +2,12 @@
  * Liga o envio de e-mails do Supabase num servidor SMTP próprio (Brevo).
  *
  *   node scripts/configurar-smtp.mjs
+ *   node scripts/configurar-smtp.mjs --remetente a@b.com --login x@smtp-brevo.com
+ *
+ * Remetente, nome e login podem vir como argumento (--remetente, --nome,
+ * --login) — são dados que não são secretos e digitá-los à mão no prompt
+ * já rendeu e-mail com colchete sobrando. A chave nunca vira argumento:
+ * ela ficaria no histórico do terminal.
  *
  * Sem isso o Supabase usa o servidor de cortesia dele: 2 e-mails por hora,
  * remetente genérico e templates que não dá para traduzir. Com SMTP próprio
@@ -68,14 +74,36 @@ console.log(
     "O remetente precisa estar verificado lá em Senders.\n",
 );
 
-const remetente = await pergunta("E-mail remetente (ex.: contato@...): ");
-const nome = (await pergunta("Nome que aparece no envio [Amauri Assessoria Imobiliária]: ")) ||
-  "Amauri Assessoria Imobiliária";
-const login = await pergunta("Login SMTP da Brevo (algo@smtp-brevo.com): ");
+function argumento(nome) {
+  const i = process.argv.indexOf(`--${nome}`);
+  return i === -1 ? undefined : process.argv[i + 1]?.trim();
+}
+
+const remetente =
+  argumento("remetente") ?? (await pergunta("E-mail remetente (ex.: contato@...): "));
+const nome =
+  argumento("nome") ??
+  ((await pergunta("Nome que aparece no envio [Amauri Assessoria Imobiliária]: ")) ||
+    "Amauri Assessoria Imobiliária");
+const login =
+  argumento("login") ?? (await pergunta("Login SMTP da Brevo (algo@smtp-brevo.com): "));
+
+const formatoEmail = /^[^\s@\]\[<>]+@[^\s@\]\[<>]+\.[^\s@\]\[<>]+$/;
+if (!formatoEmail.test(remetente)) {
+  console.error(`\nO e-mail "${remetente}" não parece válido. Nada foi alterado.`);
+  process.exit(1);
+}
+if (!/@smtp-brevo\.com$/.test(login)) {
+  console.error(
+    `\nO login "${login}" não termina em @smtp-brevo.com (com hífen). Nada foi alterado.`,
+  );
+  process.exit(1);
+}
+console.log(`\nRemetente: ${nome} <${remetente}>\nLogin:     ${login}\n`);
 const chave = await pergunta("Chave SMTP (não aparece na tela): ", { oculto: true });
 
-if (!remetente.includes("@") || !login || !chave) {
-  console.error("\nFaltou algum dado. Nada foi alterado.");
+if (!chave) {
+  console.error("\nFaltou a chave. Nada foi alterado.");
   process.exit(1);
 }
 
