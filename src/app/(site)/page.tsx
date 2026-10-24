@@ -23,10 +23,6 @@ export default async function Home() {
   const whatsapp = linkWhatsApp(config.contato);
   const [principal, ...demais] = destaques;
 
-  // Até a imagem oficial do banner chegar, a capa do imóvel mais caro segura
-  // a primeira dobra. Trocar por config.hero.imagem quando ela existir.
-  const imagemHero = config.hero.imagem ?? principal?.imagens?.[0]?.url ?? null;
-
   const menorPreco = destaques
     .map((i) => i.preco)
     .filter((p): p is number => typeof p === "number")
@@ -38,23 +34,49 @@ export default async function Home() {
 
       <main>
         {/* ---------------------------------------------------- primeira dobra */}
-        <section className="relative isolate flex min-h-[92svh] items-end overflow-hidden">
-          {imagemHero ? (
+        <section className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-[#081828]">
+          {config.hero.imagem ? (
             <Image
-              src={imagemHero}
+              src={config.hero.imagem}
               alt=""
               fill
               priority
               sizes="100vw"
-              className="-z-10 scale-105 object-cover"
+              className="-z-10 object-cover"
             />
           ) : (
-            <div className="absolute inset-0 -z-10 bg-brand-950" />
+            /* Duas composições, escolhidas pela largura da tela: na larga o
+               Amauri fica à direita e o título ocupa o escuro da esquerda;
+               na estreita ele fica no topo e o texto desce. <picture> baixa
+               só a que vai aparecer — duas <Image> baixariam as duas. */
+            <picture>
+              {/* A troca só em 1280px: abaixo disso a arte larga (2.08) seria
+                  recortada demais e cortaria o Amauri. A estreita aguenta
+                  telas médias porque ele está no centro dela. */}
+              <source
+                media="(min-width: 1280px)"
+                srcSet="/banner-largo.webp"
+                width={1920}
+                height={924}
+              />
+              <img
+                src="/banner-estreito.webp"
+                alt=""
+                width={1080}
+                height={892}
+                fetchPriority="high"
+                decoding="async"
+                // object-top: quando sobra altura, o corte tira o rodapé da
+                // arte, nunca o rosto.
+                className="absolute inset-0 -z-10 size-full object-cover object-top"
+              />
+            </picture>
           )}
+
+          {/* O banner já nasce escuro à esquerda; o véu só firma a leitura
+              do texto sobre ele, sem apagar a foto. */}
           <div
-            // Mais escuro no meio: o título branco cai sobre a parte clara
-            // da foto e a leitura ficava no limite.
-            className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-950 via-brand-950/70 to-brand-950/25"
+            className="absolute inset-0 -z-10 bg-gradient-to-t from-[#081828] via-[#081828]/60 to-[#081828]/15 xl:bg-gradient-to-r xl:from-[#081828] xl:via-[#081828]/70 xl:to-transparent"
             aria-hidden
           />
 
@@ -240,17 +262,16 @@ export default async function Home() {
               </Link>
             </Revela>
 
-            {destaques[1]?.imagens?.[0] ? (
-              <Revela atraso={120} className="relative min-h-[22rem] lg:min-h-0">
-                <Image
-                  src={destaques[1].imagens[0].url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </Revela>
-            ) : null}
+            <Revela atraso={120} className="relative flex items-end justify-center lg:justify-end">
+              <Image
+                src="/amauri-retrato.webp"
+                alt="Amauri Nobre, corretor responsável pela assessoria"
+                width={754}
+                height={889}
+                sizes="(max-width: 1024px) 70vw, 36vw"
+                className="h-auto w-full max-w-sm lg:max-w-none"
+              />
+            </Revela>
           </div>
         </section>
 

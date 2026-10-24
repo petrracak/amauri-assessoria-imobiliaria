@@ -95,6 +95,18 @@ async function iconeMaskable(destino, lado = 512) {
   return { destino, dim: `${lado}×${lado}`, kb: png.length / 1024 };
 }
 
+/** Banner e retrato: fotos, não marca — WebP com qualidade alta. */
+async function foto(origem, destino, largura, qualidade = 82) {
+  const webp = await sharp(`${ORIGEM}/${origem}`)
+    .resize({ width: largura, withoutEnlargement: true })
+    .webp({ quality: qualidade })
+    .toBuffer();
+
+  await writeFile(destino, webp);
+  const m = await sharp(webp).metadata();
+  return { destino, dim: `${m.width}×${m.height}`, kb: webp.length / 1024 };
+}
+
 await mkdir("public", { recursive: true });
 
 const saidas = [
@@ -107,6 +119,13 @@ const saidas = [
   await icone("public/apple-icon.png", 180),
   await icone("src/app/icon.png", 64),
   await iconeMaskable("public/icone-maskable-512.png"),
+
+  // Duas composições do banner: na larga o Amauri fica à direita e sobra
+  // espaço escuro à esquerda para o título; na estreita ele fica no topo e
+  // o texto desce. Recortar uma só estragaria o enquadramento.
+  await foto("banner-largo.webp", "public/banner-largo.webp", 1920),
+  await foto("banner-estreito.webp", "public/banner-estreito.webp", 1080),
+  await foto("amauri-retrato.webp", "public/amauri-retrato.webp", 900, 86),
 ];
 
 for (const s of saidas) {
