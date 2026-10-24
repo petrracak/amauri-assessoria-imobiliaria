@@ -54,6 +54,32 @@ export type EstadoImovel = {
   erros?: Record<string, string>;
 };
 
+/**
+ * Limpa o cache das páginas que mostram este imóvel.
+ *
+ * A ficha precisa do caminho dela: sem isto, o catálogo atualizava na hora
+ * mas a página do imóvel ficava até cinco minutos com o conteúdo velho —
+ * justamente a página que a equipe abre para conferir o que acabou de
+ * cadastrar.
+ */
+async function revalidarImovel(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  propertyId: string,
+) {
+  const { data } = await supabase
+    .from("properties")
+    .select("slug")
+    .eq("id", propertyId)
+    .maybeSingle();
+
+  if (data?.slug) revalidatePath(`/imoveis/${data.slug}`);
+
+  revalidatePath("/admin/imoveis");
+  revalidatePath(`/admin/imoveis/${propertyId}`);
+  revalidatePath("/imoveis");
+  revalidatePath("/");
+}
+
 /** Próxima referência livre: 035 -> 036. */
 async function proximaRef(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data } = await supabase
@@ -108,9 +134,7 @@ export async function salvarImovel(
     const { error } = await supabase.from("properties").update(campos).eq("id", id);
     if (error) return { ok: false, mensagem: `Não deu para salvar: ${error.message}` };
 
-    revalidatePath("/admin/imoveis");
-    revalidatePath("/imoveis");
-    revalidatePath("/");
+    await revalidarImovel(supabase, id);
     return { ok: true, id, mensagem: "Alterações salvas." };
   }
 
@@ -125,8 +149,7 @@ export async function salvarImovel(
 
   if (error) return { ok: false, mensagem: `Não deu para cadastrar: ${error.message}` };
 
-  revalidatePath("/admin/imoveis");
-  revalidatePath("/imoveis");
+  await revalidarImovel(supabase, data.id);
   return { ok: true, id: data.id, mensagem: "Imóvel cadastrado." };
 }
 
@@ -135,9 +158,7 @@ export async function alterarStatus(id: string, status: "rascunho" | "publicado"
   const supabase = await createClient();
   await supabase.from("properties").update({ status }).eq("id", id);
 
-  revalidatePath("/admin/imoveis");
-  revalidatePath("/imoveis");
-  revalidatePath("/");
+  await revalidarImovel(supabase, id);
 }
 
 export async function apagarImovel(id: string) {
@@ -153,8 +174,17 @@ export async function apagarImovel(id: string) {
   const caminhos = (fotos ?? []).map((f) => f.path).filter(Boolean) as string[];
   if (caminhos.length) await supabase.storage.from("imoveis").remove(caminhos);
 
+  // O slug precisa ser lido antes da exclusão: depois não há de onde tirar,
+  // e sem limpar esse caminho a ficha do imóvel apagado continuaria no ar.
+  const { data: antes } = await supabase
+    .from("properties")
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+
   await supabase.from("properties").delete().eq("id", id);
 
+  if (antes?.slug) revalidatePath(`/imoveis/${antes.slug}`);
   revalidatePath("/admin/imoveis");
   revalidatePath("/imoveis");
   revalidatePath("/");
@@ -185,8 +215,7 @@ export async function registrarFotos(
   const { error } = await supabase.from("property_images").insert(linhas);
   if (error) return { ok: false, mensagem: error.message };
 
-  revalidatePath(`/admin/imoveis/${propertyId}`);
-  revalidatePath("/imoveis");
+  await revalidarImovel(supabase, propertyId);
   return { ok: true };
 }
 
@@ -216,8 +245,7 @@ export async function removerFoto(fotoId: string, propertyId: string) {
     }
   }
 
-  revalidatePath(`/admin/imoveis/${propertyId}`);
-  revalidatePath("/imoveis");
+  await revalidarImovel(supabase, propertyId);
 }
 
 export async function definirCapa(fotoId: string, propertyId: string) {
@@ -233,7 +261,5 @@ export async function definirCapa(fotoId: string, propertyId: string) {
 
   await supabase.from("property_images").update({ capa: true }).eq("id", fotoId);
 
-  revalidatePath(`/admin/imoveis/${propertyId}`);
-  revalidatePath("/imoveis");
-  revalidatePath("/");
+  await revalidarImovel(supabase, propertyId);
 }
