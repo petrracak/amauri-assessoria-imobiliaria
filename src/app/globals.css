@@ -198,6 +198,65 @@ html[data-intro="visto"] #intro {
   }
 }
 
+/* ------------------------------------------------------- tela de login */
+.fundo-login {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 0%, #1d3758 0%, #121f33 55%, #0b1424 100%);
+}
+
+/* O triângulo do logo. A altura vem da proporção, a largura de cada peça. */
+.fundo-login i {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1 / 0.88;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    165deg,
+    rgb(108 163 224 / var(--a, 0.2)),
+    rgb(36 68 111 / 0.03) 72%
+  );
+  animation: deriva var(--t, 28s) ease-in-out var(--d, 0s) infinite alternate;
+  will-change: transform;
+}
+
+@keyframes deriva {
+  from {
+    transform: translate3d(0, 0, 0) rotate(var(--r0, 0deg));
+  }
+  to {
+    transform: translate3d(var(--x, 2vw), var(--y, -4vh), 0) rotate(var(--r1, 3deg));
+  }
+}
+
+/* Entra depois da cortina de abertura, como o resto do site. */
+.login-entra {
+  animation: sobe 0.8s var(--ease-out-soft) 1.05s both;
+}
+.login-entra:nth-child(2) {
+  animation-delay: 1.15s;
+}
+.login-entra:nth-child(3) {
+  animation-delay: 1.3s;
+}
+html[data-intro="visto"] .login-entra {
+  animation-delay: 0.05s;
+}
+html[data-intro="visto"] .login-entra:nth-child(2) {
+  animation-delay: 0.15s;
+}
+html[data-intro="visto"] .login-entra:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fundo-login i,
+  .login-entra {
+    animation: none;
+  }
+}
+
 /* ------------------------------------------------------ microanimações */
 /* Entrada da primeira dobra: um movimento orquestrado, escalonado por
    linha. Começa depois da cortina sair, para não acontecer escondido. */

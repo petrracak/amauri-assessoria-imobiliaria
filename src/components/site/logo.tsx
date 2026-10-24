@@ -24,10 +24,14 @@ export function Logo({
   className?: string;
   href?: string | null;
   branca?: boolean;
-  tamanho?: "sm" | "md";
+  tamanho?: "sm" | "md" | "lg";
 }) {
   const altura =
-    tamanho === "sm" ? "h-9 w-auto" : "h-[2.875rem] w-auto lg:h-[3.5rem]";
+    tamanho === "sm"
+      ? "h-9 w-auto"
+      : tamanho === "lg"
+        ? "h-[4.25rem] w-auto lg:h-[4.75rem]"
+        : "h-[2.875rem] w-auto lg:h-[3.5rem]";
 
   const marca = branca ? (
     <Image

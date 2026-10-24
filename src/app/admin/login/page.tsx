@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
+import { FundoLogin } from "@/components/admin/fundo-login";
 import { Logo } from "@/components/site/logo";
 import { loginParaEmail } from "@/lib/equipe";
 import { createClient } from "@/lib/supabase/client";
@@ -17,8 +18,10 @@ const MENSAGENS: Record<string, string> = {
     "Abra o link no mesmo aparelho em que você pediu o acesso, ou entre com a senha.",
 };
 
+// Campos sobre vidro: um contorno claro e um véu, para a área de toque
+// continuar evidente com o fundo se mexendo atrás.
 const entrada =
-  "mt-2 w-full border-b border-border-strong bg-transparent py-3 text-[0.9375rem] placeholder:text-fg-subtle focus:border-accent focus:outline-none";
+  "mt-2 w-full rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3.5 text-[0.9375rem] text-fg placeholder:text-fg-subtle transition-colors focus:border-accent focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-accent/30";
 
 function Formulario() {
   const router = useRouter();
@@ -93,7 +96,7 @@ function Formulario() {
   if (enviado) {
     return (
       <div>
-        <h1 className="font-display text-display-sm">Link enviado</h1>
+        <h1 className="font-display text-[1.75rem] leading-tight">Link enviado</h1>
         <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
           Abra o e-mail que chegou em <span className="text-fg">{email}</span> e
           toque no link. Ele vale por uma hora.
@@ -114,14 +117,14 @@ function Formulario() {
 
   return (
     <form onSubmit={modo === "senha" ? entrarComSenha : pedirLink}>
-      <h1 className="font-display text-display-sm">Entrar no painel</h1>
-      <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
+      <h1 className="font-display text-[1.75rem] leading-tight">Entrar no painel</h1>
+      <p className="mt-3 text-pretty leading-relaxed text-fg-muted">
         {modo === "senha"
           ? "Use seu nome de acesso, ou o e-mail, com a sua senha."
           : "Informe seu e-mail e enviamos um link de acesso."}
       </p>
 
-      <label htmlFor="email" className="mt-10 block text-sm text-fg-muted">
+      <label htmlFor="email" className="mt-8 block text-sm text-fg-muted">
         {modo === "senha" ? "Nome ou e-mail" : "E-mail"}
       </label>
       <input
@@ -139,7 +142,7 @@ function Formulario() {
 
       {modo === "senha" ? (
         <>
-          <label htmlFor="senha" className="mt-7 block text-sm text-fg-muted">
+          <label htmlFor="senha" className="mt-5 block text-sm text-fg-muted">
             Senha
           </label>
           <div className="relative">
@@ -157,7 +160,7 @@ function Formulario() {
               type="button"
               onClick={() => setVerSenha((v) => !v)}
               aria-label={verSenha ? "Esconder senha" : "Mostrar senha"}
-              className="absolute bottom-3 right-0 text-fg-subtle transition-colors hover:text-fg"
+              className="absolute bottom-3.5 right-4 text-fg-subtle transition-colors hover:text-fg"
             >
               {verSenha ? (
                 <EyeOff className="size-5" strokeWidth={1.5} />
@@ -169,12 +172,19 @@ function Formulario() {
         </>
       ) : null}
 
-      {erro ? <p className="mt-5 text-sm text-fg">{erro}</p> : null}
+      {erro ? (
+        <p
+          role="alert"
+          className="mt-5 rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-fg"
+        >
+          {erro}
+        </p>
+      ) : null}
 
       <button
         type="submit"
         disabled={ocupado}
-        className="mt-9 w-full rounded-full bg-accent px-7 py-3.5 text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-60"
+        className="mt-7 w-full rounded-full bg-white px-7 py-3.5 font-medium text-brand-950 transition-colors hover:bg-brand-100 disabled:opacity-60"
       >
         {ocupado
           ? "Aguarde…"
@@ -189,7 +199,7 @@ function Formulario() {
           setModo(modo === "senha" ? "link" : "senha");
           setErro(null);
         }}
-        className="mt-6 text-sm text-fg-muted underline-offset-4 hover:text-fg hover:underline"
+        className="mt-5 block w-full text-center text-sm text-fg-muted underline-offset-4 hover:text-fg hover:underline"
       >
         {modo === "senha"
           ? "Esqueci a senha, quero um link por e-mail"
@@ -201,17 +211,23 @@ function Formulario() {
 
 export default function Login() {
   return (
-    <main className="grid min-h-dvh place-items-center px-5 py-16">
-      <div className="w-full max-w-md">
-        <Logo tamanho="sm" />
-        <div className="mt-12">
+    <main className="campo-tinta relative isolate grid min-h-dvh place-items-center overflow-hidden px-5 py-12">
+      <FundoLogin />
+
+      <div className="w-full max-w-[26rem]">
+        <div className="login-entra flex justify-center">
+          <Logo branca tamanho="lg" />
+        </div>
+
+        <div className="login-entra mt-9 rounded-[1.75rem] border border-white/15 bg-white/[0.07] p-7 shadow-[0_30px_80px_-24px_rgb(0_0_0/0.65)] backdrop-blur-2xl backdrop-saturate-150 sm:p-9">
           <Suspense fallback={null}>
             <Formulario />
           </Suspense>
         </div>
+
         <Link
           href="/"
-          className="mt-12 inline-block text-sm text-fg-muted underline-offset-4 hover:text-fg hover:underline"
+          className="login-entra mt-8 block text-center text-sm text-fg-muted underline-offset-4 hover:text-fg hover:underline"
         >
           Voltar ao site
         </Link>
