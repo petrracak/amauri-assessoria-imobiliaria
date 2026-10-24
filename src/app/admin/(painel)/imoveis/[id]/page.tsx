@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { apagarImovel } from "@/app/actions/imoveis";
+import { Abas } from "@/components/admin/abas";
 import { PhotoManager } from "@/components/admin/photo-manager";
 import { PropertyForm } from "@/components/admin/property-form";
+import { Cabecalho, Cartao, Pagina, SeloSituacao, botao } from "@/components/admin/ui";
 import { exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -34,61 +36,51 @@ export default async function EditarImovel({ params }: { params: Params }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <nav className="text-sm text-fg-muted">
-        <Link href="/admin/imoveis" className="transition-colors hover:text-fg">
-          Imóveis
-        </Link>
-        <span className="px-2 text-fg-subtle">/</span>
-        <span className="numeros text-fg">{imovel.ref}</span>
-      </nav>
+    <Pagina largura="max-w-3xl">
+      <Cabecalho
+        voltar={{ href: "/admin/imoveis", rotulo: "Imóveis" }}
+        titulo={imovel.titulo}
+        descricao={
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="numeros">Ref. {imovel.ref}</span>
+            <SeloSituacao situacao={imovel.status} />
+          </span>
+        }
+        acoes={
+          imovel.status === "publicado" ? (
+            <Link href={`/imoveis/${imovel.slug}`} target="_blank" className={botao.secundario}>
+              <ExternalLink className="size-5" strokeWidth={1.6} />
+              Ver no site
+            </Link>
+          ) : null
+        }
+      />
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-balance font-display text-display-sm">{imovel.titulo}</h1>
-          <p className="mt-2 text-sm capitalize text-fg-muted">{imovel.status}</p>
-        </div>
-
-        {imovel.status === "publicado" ? (
-          <Link
-            href={`/imoveis/${imovel.slug}`}
-            target="_blank"
-            className="flex items-center gap-2 rounded-full border border-border-base px-4 py-2.5 text-sm text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-          >
-            <ExternalLink className="size-4" strokeWidth={1.5} />
-            Ver no site
-          </Link>
-        ) : null}
-      </div>
-
-      <div className="mt-12">
-        <PhotoManager propertyId={imovel.id} refImovel={imovel.ref} fotos={fotos} />
-      </div>
-
-      <div className="mt-16 border-t border-border-base pt-12">
-        <h2 className="font-display text-2xl">Dados do imóvel</h2>
-        <div className="mt-6">
-          <PropertyForm imovel={imovel} />
-        </div>
-      </div>
+      <Abas
+        abas={[
+          { id: "dados", rotulo: "Dados", conteudo: <PropertyForm imovel={imovel} /> },
+          {
+            id: "fotos",
+            rotulo: "Fotos",
+            contagem: fotos.length,
+            conteudo: <PhotoManager propertyId={imovel.id} refImovel={imovel.ref} fotos={fotos} />,
+          },
+        ]}
+      />
 
       {perfil.role === "admin" ? (
-        <div className="mt-20 border-t border-border-base pt-10">
-          <h2 className="font-display text-xl">Apagar imóvel</h2>
-          <p className="mt-2 max-w-[52ch] text-pretty text-sm leading-relaxed text-fg-muted">
-            Remove o imóvel e todas as fotos, sem volta. Para só tirar do ar,
-            mude a situação para arquivado.
-          </p>
-          <form action={apagar} className="mt-5">
-            <button
-              type="submit"
-              className="rounded-full border border-border-strong px-5 py-2.5 text-sm transition-colors hover:border-fg hover:text-fg"
-            >
+        <Cartao
+          tom="perigo"
+          titulo="Apagar imóvel"
+          descricao="Remove o imóvel e todas as fotos, sem volta. Para só tirar do ar, mude a situação para Arquivado."
+        >
+          <form action={apagar}>
+            <button type="submit" className={botao.perigo}>
               Apagar definitivamente
             </button>
           </form>
-        </div>
+        </Cartao>
       ) : null}
-    </div>
+    </Pagina>
   );
 }

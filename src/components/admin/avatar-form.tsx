@@ -6,7 +6,9 @@ import { useRef, useState, useTransition } from "react";
 
 import { salvarAvatar } from "@/app/actions/avatar";
 import { Avatar } from "@/components/admin/avatar";
+import { Cartao, botao } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 
 const LADO = 400;
 
@@ -94,23 +96,18 @@ export function AvatarForm({
   const ocupado = enviando || pendente;
 
   return (
-    <section>
-      <h2 className="font-display text-2xl">Foto de perfil</h2>
-      <p className="mt-3 max-w-[48ch] text-pretty leading-relaxed text-fg-muted">
-        Aparece no painel, ao lado do seu nome. Sem foto, fica o ícone padrão.
-      </p>
-
-      <div className="mt-7 flex flex-wrap items-center gap-6">
+    <Cartao titulo="Foto de perfil" descricao="Aparece no painel, ao lado do seu nome. Sem foto, fica o ícone padrão.">
+      <div className="flex flex-wrap items-center gap-5">
         <Avatar url={avatarUrl} nome={nome} tamanho="lg" />
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex min-w-0 flex-1 basis-48 flex-col gap-2 sm:flex-row">
           <button
             type="button"
             onClick={() => entrada.current?.click()}
             disabled={ocupado}
-            className="flex items-center gap-2 rounded-full border border-border-strong px-5 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+            className={cn(botao.secundario, "flex-1 sm:flex-none")}
           >
-            <Camera className="size-4" strokeWidth={1.5} />
+            <Camera className="size-5" strokeWidth={1.6} />
             {enviando ? "Enviando…" : avatarUrl ? "Trocar foto" : "Escolher foto"}
           </button>
 
@@ -119,9 +116,9 @@ export function AvatarForm({
               type="button"
               onClick={remover}
               disabled={ocupado}
-              className="flex items-center gap-2 rounded-full border border-border-base px-5 py-2.5 text-sm text-fg-muted transition-colors hover:border-border-strong hover:text-fg disabled:opacity-50"
+              className={cn(botao.suave, "flex-1 sm:flex-none")}
             >
-              <Trash2 className="size-4" strokeWidth={1.5} />
+              <Trash2 className="size-5" strokeWidth={1.6} />
               Remover
             </button>
           ) : null}
@@ -136,7 +133,11 @@ export function AvatarForm({
         onChange={(e) => enviar(e.target.files?.[0])}
       />
 
-      {aviso ? <p className="mt-4 text-sm text-fg-muted">{aviso}</p> : null}
-    </section>
+      {aviso ? (
+        <p role="status" className="mt-4 text-sm text-fg-muted">
+          {aviso}
+        </p>
+      ) : null}
+    </Cartao>
   );
 }

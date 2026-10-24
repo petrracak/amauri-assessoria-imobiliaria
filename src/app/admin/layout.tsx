@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { Intro } from "@/components/site/intro";
 
@@ -14,6 +14,19 @@ export const metadata: Metadata = {
   manifest: "/painel.webmanifest",
   // O iOS usa este nome para o ícone na tela inicial.
   appleWebApp: { capable: true, title: "Painel", statusBarStyle: "default" },
+};
+
+/**
+ * viewport-fit=cover deixa o app ocupar a tela inteira no iPhone; sem ele,
+ * env(safe-area-inset-bottom) vale zero e a barra de abas fica por baixo
+ * do indicador de início. Os espaços seguros são tratados no layout.
+ */
+export const viewport: Viewport = {
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
+  ],
 };
 
 export default function AdminRaiz({ children }: { children: React.ReactNode }) {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
 import { definirCapa, registrarFotos, removerFoto } from "@/app/actions/imoveis";
+import { Cartao, botao } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -135,34 +136,35 @@ export function PhotoManager({
   }
 
   return (
-    <section>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-2xl">
-          Fotos{" "}
-          <span className="numeros text-base text-fg-muted">({fotos.length})</span>
-        </h2>
+    <Cartao
+      titulo={
+        <>
+          Fotos <span className="numeros text-base font-normal text-fg-muted">({fotos.length})</span>
+        </>
+      }
+      descricao="A primeira foto é a capa do anúncio. Toque na estrela para trocar."
+    >
+      <div className="grid grid-cols-2 gap-2 sm:flex">
+        <button
+          type="button"
+          onClick={() => inputCamera.current?.click()}
+          disabled={Boolean(enviando)}
+          className={cn(botao.primario, "sm:hidden")}
+        >
+          <Camera className="size-5" strokeWidth={1.7} />
+          Tirar foto
+        </button>
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => inputCamera.current?.click()}
-            disabled={Boolean(enviando)}
-            className="flex items-center gap-2 rounded-full border border-border-strong px-4 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-50 sm:hidden"
-          >
-            <Camera className="size-4" strokeWidth={1.5} />
-            Tirar foto
-          </button>
-
-          <button
-            type="button"
-            onClick={() => inputGaleria.current?.click()}
-            disabled={Boolean(enviando)}
-            className="flex items-center gap-2 rounded-full border border-border-strong px-4 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
-          >
-            <ImagePlus className="size-4" strokeWidth={1.5} />
-            Adicionar fotos
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => inputGaleria.current?.click()}
+          disabled={Boolean(enviando)}
+          className={cn(botao.secundario, "max-sm:px-4")}
+        >
+          <ImagePlus className="size-5" strokeWidth={1.7} />
+          <span className="sm:hidden">Galeria</span>
+          <span className="hidden sm:inline">Adicionar fotos</span>
+        </button>
       </div>
 
       <input
@@ -183,20 +185,35 @@ export function PhotoManager({
       />
 
       {enviando ? (
-        <p className="numeros mt-4 text-sm text-fg-muted">
-          Enviando {enviando.feitas} de {enviando.total}…
+        <div className="mt-4" role="status">
+          <div className="h-2 overflow-hidden rounded-full bg-bg-subtle">
+            <div
+              className="h-full rounded-full bg-accent transition-[width] duration-300"
+              style={{ width: `${Math.max(8, (enviando.feitas / enviando.total) * 100)}%` }}
+            />
+          </div>
+          <p className="numeros mt-2 text-sm text-fg-muted">
+            Enviando {enviando.feitas} de {enviando.total}…
+          </p>
+        </div>
+      ) : null}
+      {erro ? (
+        <p role="alert" className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">
+          {erro}
         </p>
       ) : null}
-      {erro ? <p className="mt-4 text-sm text-fg">{erro}</p> : null}
 
       {fotos.length === 0 && !enviando ? (
-        <p className="mt-5 text-pretty leading-relaxed text-fg-muted">
+        <p className="mt-5 rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-sm text-fg-muted">
           Sem fotos ainda. A primeira que entrar vira a capa do anúncio.
         </p>
       ) : (
-        <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <ul className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {fotos.map((foto) => (
-            <li key={foto.id} className="group relative aspect-[4/3] overflow-hidden bg-bg-subtle">
+            <li
+              key={foto.id}
+              className="relative aspect-[4/3] overflow-hidden rounded-xl bg-bg-subtle"
+            >
               <Image
                 src={foto.url}
                 alt=""
@@ -206,12 +223,12 @@ export function PhotoManager({
               />
 
               {foto.capa ? (
-                <span className="absolute left-2 top-2 bg-bg px-2 py-1 text-[0.625rem] text-fg">
-                  capa
+                <span className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-fg">
+                  Capa
                 </span>
               ) : null}
 
-              <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1 bg-gradient-to-t from-black/70 to-transparent p-2">
+              <div className="absolute inset-x-0 bottom-0 flex justify-end gap-1.5 bg-gradient-to-t from-black/65 to-transparent p-2 pt-8">
                 {!foto.capa ? (
                   <button
                     type="button"
@@ -224,9 +241,9 @@ export function PhotoManager({
                         router.refresh();
                       })
                     }
-                    className="grid size-9 place-items-center rounded-full bg-white/90 text-brand-950 transition-colors hover:bg-white"
+                    className="grid size-11 place-items-center rounded-full bg-white/95 text-brand-950 transition-transform active:scale-90"
                   >
-                    <Star className="size-4" strokeWidth={1.5} />
+                    <Star className="size-[1.15rem]" strokeWidth={1.7} />
                   </button>
                 ) : null}
 
@@ -242,18 +259,15 @@ export function PhotoManager({
                       router.refresh();
                     });
                   }}
-                  className={cn(
-                    "grid size-9 place-items-center rounded-full bg-white/90 text-brand-950",
-                    "transition-colors hover:bg-white",
-                  )}
+                  className="grid size-11 place-items-center rounded-full bg-white/95 text-red-600 transition-transform active:scale-90"
                 >
-                  <Trash2 className="size-4" strokeWidth={1.5} />
+                  <Trash2 className="size-[1.15rem]" strokeWidth={1.7} />
                 </button>
               </div>
             </li>
           ))}
         </ul>
       )}
-    </section>
+    </Cartao>
   );
 }

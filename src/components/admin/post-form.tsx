@@ -7,11 +7,16 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { salvarPost, type EstadoPost } from "@/app/actions/posts";
+import {
+  BarraSalvar,
+  Campo,
+  Cartao,
+  Segmentos,
+  botao,
+  campo,
+} from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-
-const entrada =
-  "mt-2 w-full border-b border-border-strong bg-transparent py-2.5 text-[0.9375rem] placeholder:text-fg-subtle focus:border-accent focus:outline-none";
 
 export type PostForm = {
   id?: string;
@@ -27,39 +32,10 @@ export type PostForm = {
   meta_description?: string | null;
 };
 
-function Campo({
-  nome,
-  rotulo,
-  dica,
-  erro,
-  children,
-}: {
-  nome: string;
-  rotulo: string;
-  dica?: string;
-  erro?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={nome} className="block text-sm text-fg-muted">
-        {rotulo}
-      </label>
-      {children}
-      {dica && !erro ? <p className="mt-1.5 text-xs text-fg-subtle">{dica}</p> : null}
-      {erro ? <p className="mt-1.5 text-xs text-fg">{erro}</p> : null}
-    </div>
-  );
-}
-
 function Salvar({ novo }: { novo: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-full bg-accent px-7 py-3.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-60"
-    >
+    <button type="submit" disabled={pending} className={cn(botao.primario, "flex-1 sm:flex-none")}>
       {pending ? "Salvando…" : novo ? "Criar texto" : "Salvar alterações"}
     </button>
   );
@@ -112,24 +88,22 @@ export function PostFormulario({ post }: { post?: PostForm }) {
   const erro = (campo: string) => estado.erros?.[campo];
 
   return (
-    <form action={acao} className="max-w-3xl">
+    <form action={acao} className="space-y-4">
       {post?.id ? <input type="hidden" name="id" value={post.id} /> : null}
       <input type="hidden" name="capa_url" value={capa.url} />
       <input type="hidden" name="capa_path" value={capa.path} />
 
-      <section>
-        <h2 className="font-display text-2xl">Imagem de capa</h2>
-
+      <Cartao titulo="Imagem de capa">
         {capa.url ? (
-          <div className="relative mt-5 aspect-[16/9] max-w-xl overflow-hidden bg-bg-subtle">
-            <Image src={capa.url} alt="" fill sizes="576px" className="object-cover" />
+          <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-bg-subtle">
+            <Image src={capa.url} alt="" fill sizes="(max-width: 768px) 100vw, 640px" className="object-cover" />
             <button
               type="button"
               onClick={() => setCapa({ url: "", path: "" })}
               aria-label="Remover capa"
-              className="absolute bottom-3 right-3 grid size-10 place-items-center rounded-full bg-white/90 text-brand-950 transition-colors hover:bg-white"
+              className="absolute bottom-3 right-3 grid size-11 place-items-center rounded-full bg-white/95 text-red-600 transition-transform active:scale-90"
             >
-              <Trash2 className="size-4" strokeWidth={1.5} />
+              <Trash2 className="size-[1.15rem]" strokeWidth={1.7} />
             </button>
           </div>
         ) : (
@@ -137,10 +111,10 @@ export function PostFormulario({ post }: { post?: PostForm }) {
             type="button"
             onClick={() => inputCapa.current?.click()}
             disabled={enviando}
-            className="mt-5 flex items-center gap-2 rounded-full border border-border-strong px-5 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+            className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong text-fg-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
           >
-            <ImagePlus className="size-4" strokeWidth={1.5} />
-            {enviando ? "Enviando…" : "Escolher imagem"}
+            <ImagePlus className="size-7" strokeWidth={1.4} />
+            <span className="text-sm font-medium">{enviando ? "Enviando…" : "Escolher imagem"}</span>
           </button>
         )}
 
@@ -151,94 +125,96 @@ export function PostFormulario({ post }: { post?: PostForm }) {
           className="hidden"
           onChange={(e) => enviarCapa(e.target.files?.[0])}
         />
-        {erroCapa ? <p className="mt-3 text-sm text-fg">{erroCapa}</p> : null}
-      </section>
+        {erroCapa ? (
+          <p role="alert" className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
+            {erroCapa}
+          </p>
+        ) : null}
+      </Cartao>
 
-      <div className="mt-12 grid gap-6">
-        <Campo nome="titulo" rotulo="Título" erro={erro("titulo")}>
-          <input
-            id="titulo"
-            name="titulo"
-            required
-            defaultValue={post?.titulo}
-            placeholder="O que olhar na documentação antes de fechar negócio"
-            className={entrada}
-          />
-        </Campo>
-
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Campo nome="categoria" rotulo="Categoria" dica="Ex.: Mercado, Financiamento, Documentação.">
+      <Cartao titulo="Sobre o texto">
+        <div className="grid gap-5">
+          <Campo nome="titulo" rotulo="Título" erro={erro("titulo")}>
             <input
-              id="categoria"
-              name="categoria"
-              defaultValue={post?.categoria ?? ""}
-              className={entrada}
+              id="titulo"
+              name="titulo"
+              required
+              defaultValue={post?.titulo}
+              placeholder="O que olhar na documentação antes de fechar negócio"
+              className={campo}
             />
           </Campo>
 
-          <Campo nome="status" rotulo="Situação" dica="Rascunho não aparece no site.">
-            <select
-              id="status"
-              name="status"
-              defaultValue={post?.status ?? "rascunho"}
-              className={entrada}
-            >
-              <option value="rascunho">Rascunho</option>
-              <option value="publicado">Publicado</option>
-            </select>
+          <Campo nome="categoria" rotulo="Categoria" dica="Ex.: Mercado, Financiamento, Documentação.">
+            <input id="categoria" name="categoria" defaultValue={post?.categoria ?? ""} className={campo} />
+          </Campo>
+
+          <div>
+            <span className="block text-sm font-medium">Situação</span>
+            <Segmentos
+              nome="status"
+              valor={post?.status ?? "rascunho"}
+              opcoes={[
+                { valor: "rascunho", rotulo: "Rascunho" },
+                { valor: "publicado", rotulo: "No ar" },
+              ]}
+            />
+            <p className="mt-1.5 text-xs text-fg-muted">Rascunho não aparece no site.</p>
+          </div>
+
+          <Campo
+            nome="resumo"
+            rotulo="Resumo"
+            dica="Aparece na lista do blog e no Google. Duas linhas bastam."
+          >
+            <textarea
+              id="resumo"
+              name="resumo"
+              rows={3}
+              defaultValue={post?.resumo ?? ""}
+              className={cn(campo, "resize-y leading-relaxed")}
+            />
           </Campo>
         </div>
+      </Cartao>
 
-        <Campo
-          nome="resumo"
-          rotulo="Resumo"
-          dica="Aparece na lista do blog e no Google. Duas linhas bastam."
-        >
-          <textarea
-            id="resumo"
-            name="resumo"
-            rows={3}
-            defaultValue={post?.resumo ?? ""}
-            className={cn(entrada, "resize-y leading-relaxed")}
-          />
-        </Campo>
-
+      <Cartao titulo="Texto">
         <Campo
           nome="conteudo"
-          rotulo="Texto"
+          rotulo="Conteúdo"
           dica="## para título, ### para subtítulo, - para lista, > para citação, **negrito**, *itálico* e [texto](link)."
         >
           <textarea
             id="conteudo"
             name="conteudo"
-            rows={22}
+            rows={18}
             defaultValue={post?.conteudo ?? ""}
-            className={cn(entrada, "resize-y font-mono text-sm leading-relaxed")}
+            className={cn(campo, "resize-y font-mono leading-relaxed")}
           />
         </Campo>
+      </Cartao>
 
-        <Campo
-          nome="slug"
-          rotulo="Endereço da página"
-          dica="Deixe vazio para gerar a partir do título. Mudar depois quebra links já compartilhados."
-        >
+      <Cartao
+        titulo="Endereço da página"
+        descricao="Deixe vazio para gerar a partir do título. Mudar depois quebra links já compartilhados."
+      >
+        <Campo nome="slug" rotulo="Final do endereço">
           <input
             id="slug"
             name="slug"
             defaultValue={post?.slug ?? ""}
             placeholder="documentacao-antes-de-fechar-negocio"
-            className={entrada}
+            className={campo}
           />
         </Campo>
-      </div>
+      </Cartao>
 
-      {estado.mensagem ? (
-        <p className="mt-8 text-sm text-fg-muted">{estado.mensagem}</p>
-      ) : null}
-
-      <div className="mt-10">
+      <BarraSalvar
+        mensagem={estado.mensagem ?? (estado.erros ? "Confira os campos marcados em vermelho." : undefined)}
+        tom={estado.ok ? "sucesso" : estado.mensagem || estado.erros ? "erro" : "neutro"}
+      >
         <Salvar novo={novo} />
-      </div>
+      </BarraSalvar>
     </form>
   );
 }

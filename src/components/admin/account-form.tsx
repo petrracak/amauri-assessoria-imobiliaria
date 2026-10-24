@@ -3,10 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Campo, Cartao, botao, campo } from "@/components/admin/ui";
 import { createClient } from "@/lib/supabase/client";
-
-const entrada =
-  "mt-2 w-full border-b border-border-strong bg-transparent py-3 text-[0.9375rem] placeholder:text-fg-subtle focus:border-accent focus:outline-none";
+import { cn } from "@/lib/utils";
 
 const MINIMO = 8;
 
@@ -62,55 +61,54 @@ export function AccountForm() {
   }
 
   return (
-    <form onSubmit={salvar} className="max-w-md">
-      <h2 className="font-display text-2xl">Senha de acesso</h2>
-      <p className="mt-3 text-pretty leading-relaxed text-fg-muted">
-        Com uma senha definida você entra direto no painel, sem depender de
-        link no e-mail. Definir de novo substitui a anterior.
-      </p>
+    <Cartao
+      titulo="Senha de acesso"
+      descricao="Com uma senha definida você entra direto no painel, sem depender de link no e-mail. Definir de novo substitui a anterior."
+    >
+      <form onSubmit={salvar} className="grid gap-5">
+        <Campo nome="senha" rotulo="Senha nova">
+          <input
+            id="senha"
+            type="password"
+            required
+            minLength={MINIMO}
+            autoComplete="new-password"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            placeholder="pelo menos 8 caracteres"
+            className={campo}
+          />
+        </Campo>
 
-      <label htmlFor="senha" className="mt-8 block text-sm text-fg-muted">
-        Senha nova
-      </label>
-      <input
-        id="senha"
-        type="password"
-        required
-        minLength={MINIMO}
-        autoComplete="new-password"
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)}
-        placeholder="pelo menos 8 caracteres"
-        className={entrada}
-      />
+        <Campo nome="confirma" rotulo="Repita a senha">
+          <input
+            id="confirma"
+            type="password"
+            required
+            autoComplete="new-password"
+            value={confirma}
+            onChange={(e) => setConfirma(e.target.value)}
+            className={campo}
+          />
+        </Campo>
 
-      <label htmlFor="confirma" className="mt-7 block text-sm text-fg-muted">
-        Repita a senha
-      </label>
-      <input
-        id="confirma"
-        type="password"
-        required
-        autoComplete="new-password"
-        value={confirma}
-        onChange={(e) => setConfirma(e.target.value)}
-        className={entrada}
-      />
+        {erro ? (
+          <p role="alert" className="text-sm font-medium text-red-600 dark:text-red-400">
+            {erro}
+          </p>
+        ) : null}
+        {pronto ? (
+          <p role="status" className="text-sm text-emerald-700 dark:text-emerald-300">
+            Senha salva. Use ela no próximo acesso.
+          </p>
+        ) : null}
 
-      {erro ? <p className="mt-5 text-sm text-fg">{erro}</p> : null}
-      {pronto ? (
-        <p className="mt-5 text-sm text-accent">
-          Senha salva. Use ela no próximo acesso.
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={ocupado}
-        className="mt-8 rounded-full bg-accent px-7 py-3.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-60"
-      >
-        {ocupado ? "Salvando…" : "Salvar senha"}
-      </button>
-    </form>
+        <div>
+          <button type="submit" disabled={ocupado} className={cn(botao.primario, "w-full sm:w-auto")}>
+            {ocupado ? "Salvando…" : "Salvar senha"}
+          </button>
+        </div>
+      </form>
+    </Cartao>
   );
 }

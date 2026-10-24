@@ -1,11 +1,12 @@
 "use client";
 
-import { KeyRound } from "lucide-react";
+import { KeyRound, UserRoundX, UserRoundCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { alterarPapel, alterarSituacao, definirSenhaDe } from "@/app/actions/equipe";
 import { Avatar } from "@/components/admin/avatar";
+import { Selo, botao, campo } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 
 export type Membro = {
@@ -23,61 +24,68 @@ export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
   const [pendente, startTransition] = useTransition();
   const [trocando, setTrocando] = useState(false);
   const [senha, setSenha] = useState("");
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<{ texto: string; ok: boolean } | null>(null);
 
   const souEu = membro.id === euSou;
 
   function executar(acao: () => Promise<{ ok: boolean; mensagem?: string }>) {
     startTransition(async () => {
       const r = await acao();
-      setAviso(r.mensagem ?? null);
+      setAviso(r.mensagem ? { texto: r.mensagem, ok: r.ok } : null);
       router.refresh();
     });
   }
 
   return (
-    <li className="py-5">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-        <Avatar url={membro.avatar_url} nome={membro.nome} />
+    <li
+      className={cn(
+        "min-w-0 rounded-2xl border border-border-base bg-bg-elevated p-4 shadow-[var(--shadow-card)]",
+        !membro.ativo && "opacity-75",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <Avatar url={membro.avatar_url} nome={membro.nome} tamanho="md" />
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[0.9375rem]">
+          <p className="truncate text-base font-medium">
             {membro.nome}
-            {souEu ? <span className="text-fg-subtle"> · você</span> : null}
+            {souEu ? <span className="font-normal text-fg-subtle"> · você</span> : null}
           </p>
-          <p className="numeros truncate text-sm text-fg-muted">
-            {membro.usuario ?? membro.email}
-          </p>
+          <p className="numeros truncate text-sm text-fg-muted">{membro.usuario ?? membro.email}</p>
         </div>
 
-        {!membro.ativo ? (
-          <span className="rounded-full border border-border-base px-3 py-1 text-xs text-fg-subtle">
-            suspenso
-          </span>
-        ) : null}
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <Selo tom={membro.role === "admin" ? "azul" : "cinza"}>
+            {membro.role === "admin" ? "Admin" : "Corretor"}
+          </Selo>
+          {!membro.ativo ? <Selo tom="ambar">Suspenso</Selo> : null}
+        </div>
+      </div>
 
-        <select
-          value={membro.role}
-          disabled={pendente || souEu}
-          onChange={(e) =>
-            executar(() =>
-              alterarPapel(membro.id, e.target.value as "admin" | "corretor"),
-            )
-          }
-          aria-label={`Nível de acesso de ${membro.nome}`}
-          className="rounded-full border border-border-base bg-transparent px-3 py-2 text-sm text-fg-muted focus:border-accent focus:outline-none disabled:opacity-50"
-        >
-          <option value="corretor">Corretor</option>
-          <option value="admin">Administrador</option>
-        </select>
+      <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+        <label className="block">
+          <span className="sr-only">Nível de acesso de {membro.nome}</span>
+          <select
+            value={membro.role}
+            disabled={pendente || souEu}
+            onChange={(e) =>
+              executar(() => alterarPapel(membro.id, e.target.value as "admin" | "corretor"))
+            }
+            className={cn(campo, "!mt-0 !min-h-11")}
+          >
+            <option value="corretor">Corretor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </label>
 
         <button
           type="button"
           onClick={() => setTrocando((v) => !v)}
-          className="flex items-center gap-2 rounded-full border border-border-base px-4 py-2 text-sm text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
+          aria-expanded={trocando}
+          className={cn(botao.secundario, "!min-h-11")}
         >
-          <KeyRound className="size-4" strokeWidth={1.5} />
-          Senha
+          <KeyRound className="size-[1.1rem]" strokeWidth={1.6} />
+          Definir senha
         </button>
 
         {!souEu ? (
@@ -85,16 +93,26 @@ export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
             type="button"
             disabled={pendente}
             onClick={() => executar(() => alterarSituacao(membro.id, !membro.ativo))}
-            className="rounded-full border border-border-base px-4 py-2 text-sm text-fg-muted transition-colors hover:border-border-strong hover:text-fg disabled:opacity-50"
+            className={cn(botao.suave, "!min-h-11")}
           >
-            {membro.ativo ? "Suspender" : "Reativar"}
+            {membro.ativo ? (
+              <>
+                <UserRoundX className="size-[1.1rem]" strokeWidth={1.6} />
+                Suspender
+              </>
+            ) : (
+              <>
+                <UserRoundCheck className="size-[1.1rem]" strokeWidth={1.6} />
+                Reativar
+              </>
+            )}
           </button>
         ) : null}
       </div>
 
       {trocando ? (
         <form
-          className="mt-4 flex flex-wrap items-end gap-3"
+          className="mt-3 rounded-xl bg-bg-subtle p-3"
           onSubmit={(e) => {
             e.preventDefault();
             executar(async () => {
@@ -107,13 +125,10 @@ export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
             });
           }}
         >
-          <div className="min-w-[14rem] flex-1">
-            <label
-              htmlFor={`senha-${membro.id}`}
-              className="block text-xs text-fg-muted"
-            >
-              Nova senha para {membro.nome}
-            </label>
+          <label htmlFor={`senha-${membro.id}`} className="block text-sm font-medium">
+            Nova senha para {membro.nome.split(" ")[0]}
+          </label>
+          <div className="mt-1.5 flex gap-2">
             <input
               id={`senha-${membro.id}`}
               type="text"
@@ -123,20 +138,26 @@ export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               placeholder="pelo menos 8 caracteres"
-              className="mt-2 w-full border-b border-border-strong bg-transparent py-2 text-sm placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+              className={cn(campo, "!mt-0 min-w-0 flex-1")}
             />
+            <button type="submit" disabled={pendente} className={botao.primario}>
+              Salvar
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={pendente}
-            className="rounded-full bg-accent px-5 py-2.5 text-sm text-accent-fg disabled:opacity-60"
-          >
-            Salvar
-          </button>
         </form>
       ) : null}
 
-      {aviso ? <p className={cn("mt-3 text-sm text-fg-muted")}>{aviso}</p> : null}
+      {aviso ? (
+        <p
+          role="status"
+          className={cn(
+            "mt-3 text-sm",
+            aviso.ok ? "text-emerald-700 dark:text-emerald-300" : "text-red-600 dark:text-red-400",
+          )}
+        >
+          {aviso.texto}
+        </p>
+      ) : null}
     </li>
   );
 }

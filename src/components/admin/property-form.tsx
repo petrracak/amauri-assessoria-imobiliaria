@@ -5,6 +5,15 @@ import { useActionState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 
 import { salvarImovel, type EstadoImovel } from "@/app/actions/imoveis";
+import {
+  BarraSalvar,
+  Campo,
+  Cartao,
+  Interruptor,
+  Segmentos,
+  botao,
+  campo,
+} from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 
 const TIPOS = [
@@ -39,46 +48,19 @@ export type ImovelForm = {
   alto_padrao?: boolean;
 };
 
-function Campo({
-  nome,
-  rotulo,
-  erro,
-  dica,
-  children,
-  className,
-}: {
-  nome: string;
-  rotulo: string;
-  erro?: string;
-  dica?: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <label htmlFor={nome} className="block text-sm text-fg-muted">
-        {rotulo}
-      </label>
-      {children}
-      {dica && !erro ? (
-        <p className="mt-1.5 text-xs text-fg-subtle">{dica}</p>
-      ) : null}
-      {erro ? <p className="mt-1.5 text-xs text-fg">{erro}</p> : null}
-    </div>
-  );
-}
-
-const entrada =
-  "mt-2 w-full border-b border-border-strong bg-transparent py-2.5 text-[0.9375rem] placeholder:text-fg-subtle focus:border-accent focus:outline-none";
+const NUMEROS = [
+  { nome: "dormitorios", rotulo: "Dormitórios" },
+  { nome: "suites", rotulo: "Suítes" },
+  { nome: "banheiros", rotulo: "Banheiros" },
+  { nome: "vagas", rotulo: "Vagas" },
+  { nome: "area_privativa", rotulo: "Área privativa (m²)" },
+  { nome: "area_total", rotulo: "Área total (m²)" },
+] as const;
 
 function Salvar({ novo }: { novo: boolean }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-full bg-accent px-7 py-3.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-60"
-    >
+    <button type="submit" disabled={pending} className={cn(botao.primario, "flex-1 sm:flex-none")}>
       {pending ? "Salvando…" : novo ? "Cadastrar imóvel" : "Salvar alterações"}
     </button>
   );
@@ -98,156 +80,167 @@ export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
     }
   }, [estado, novo, router]);
 
-  const erro = (campo: string) => estado.erros?.[campo];
+  const erro = (c: string) => estado.erros?.[c];
 
   return (
-    <form action={acao} className="max-w-3xl">
+    <form action={acao} className="space-y-4">
       {imovel?.id ? <input type="hidden" name="id" value={imovel.id} /> : null}
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <Campo nome="titulo" rotulo="Título do anúncio" erro={erro("titulo")} className="sm:col-span-2">
-          <input
-            id="titulo"
-            name="titulo"
-            required
-            defaultValue={imovel?.titulo}
-            placeholder="Apartamento no Edifício Orion Palace"
-            className={entrada}
-          />
-        </Campo>
+      <Cartao titulo="Anúncio">
+        <div className="grid gap-5">
+          <Campo nome="titulo" rotulo="Título" erro={erro("titulo")}>
+            <input
+              id="titulo"
+              name="titulo"
+              required
+              defaultValue={imovel?.titulo}
+              placeholder="Apartamento no Edifício Orion Palace"
+              className={campo}
+            />
+          </Campo>
 
-        <Campo nome="tipo" rotulo="Tipo" erro={erro("tipo")}>
-          <select id="tipo" name="tipo" defaultValue={imovel?.tipo ?? "Apartamento"} className={entrada}>
-            {TIPOS.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </Campo>
+          <Campo nome="tipo" rotulo="Tipo" erro={erro("tipo")}>
+            <select id="tipo" name="tipo" defaultValue={imovel?.tipo ?? "Apartamento"} className={campo}>
+              {TIPOS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </Campo>
 
-        <Campo nome="status" rotulo="Situação" dica="Rascunho não aparece no site.">
-          <select id="status" name="status" defaultValue={imovel?.status ?? "rascunho"} className={entrada}>
-            <option value="rascunho">Rascunho</option>
-            <option value="publicado">Publicado</option>
-            <option value="arquivado">Arquivado</option>
-          </select>
-        </Campo>
+          <div>
+            <span className="block text-sm font-medium">Situação</span>
+            <Segmentos
+              nome="status"
+              valor={imovel?.status ?? "rascunho"}
+              opcoes={[
+                { valor: "rascunho", rotulo: "Rascunho" },
+                { valor: "publicado", rotulo: "No ar" },
+                { valor: "arquivado", rotulo: "Arquivado" },
+              ]}
+            />
+            <p className="mt-1.5 text-xs text-fg-muted">
+              Rascunho e arquivado não aparecem no site.
+            </p>
+          </div>
+        </div>
+      </Cartao>
 
-        <Campo nome="bairro" rotulo="Bairro">
-          <input id="bairro" name="bairro" defaultValue={imovel?.bairro ?? ""} className={entrada} />
-        </Campo>
+      <Cartao titulo="Localização">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Campo nome="bairro" rotulo="Bairro">
+            <input id="bairro" name="bairro" defaultValue={imovel?.bairro ?? ""} className={campo} />
+          </Campo>
 
-        <Campo nome="cidade" rotulo="Cidade">
-          <input id="cidade" name="cidade" defaultValue={imovel?.cidade ?? "Santarém"} className={entrada} />
-        </Campo>
+          <Campo nome="cidade" rotulo="Cidade">
+            <input id="cidade" name="cidade" defaultValue={imovel?.cidade ?? "Santarém"} className={campo} />
+          </Campo>
 
-        <Campo
-          nome="endereco"
-          rotulo="Endereço"
-          dica="Deixe vazio para não exibir o endereço no site."
-          className="sm:col-span-2"
-        >
-          <input id="endereco" name="endereco" defaultValue={imovel?.endereco ?? ""} className={entrada} />
-        </Campo>
+          <Campo
+            nome="endereco"
+            rotulo="Endereço"
+            dica="Deixe vazio para não mostrar o endereço no site."
+            className="sm:col-span-2"
+          >
+            <input id="endereco" name="endereco" defaultValue={imovel?.endereco ?? ""} className={campo} />
+          </Campo>
+        </div>
+      </Cartao>
 
-        <Campo nome="preco" rotulo="Preço (R$)" erro={erro("preco")}>
-          <input
-            id="preco"
-            name="preco"
-            inputMode="decimal"
-            defaultValue={imovel?.preco ?? ""}
-            placeholder="750000"
-            className={cn(entrada, "numeros")}
-          />
-        </Campo>
+      <Cartao titulo="Valores">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Campo nome="preco" rotulo="Preço (R$)" erro={erro("preco")}>
+            <input
+              id="preco"
+              name="preco"
+              inputMode="decimal"
+              defaultValue={imovel?.preco ?? ""}
+              placeholder="750000"
+              className={cn(campo, "numeros")}
+            />
+          </Campo>
 
-        <Campo nome="preco_anterior" rotulo="Preço anterior (R$)" dica="Aparece riscado, para mostrar desconto.">
-          <input
-            id="preco_anterior"
-            name="preco_anterior"
-            inputMode="decimal"
-            defaultValue={imovel?.preco_anterior ?? ""}
-            className={cn(entrada, "numeros")}
-          />
-        </Campo>
-      </div>
+          <Campo
+            nome="preco_anterior"
+            rotulo="Preço anterior (R$)"
+            dica="Aparece riscado, para mostrar desconto."
+          >
+            <input
+              id="preco_anterior"
+              name="preco_anterior"
+              inputMode="decimal"
+              defaultValue={imovel?.preco_anterior ?? ""}
+              className={cn(campo, "numeros")}
+            />
+          </Campo>
+        </div>
+      </Cartao>
 
-      <fieldset className="mt-10">
-        <legend className="font-display text-xl">Números do imóvel</legend>
-        <div className="mt-5 grid grid-cols-2 gap-6 sm:grid-cols-3">
-          {[
-            { nome: "dormitorios", rotulo: "Dormitórios" },
-            { nome: "suites", rotulo: "Suítes" },
-            { nome: "banheiros", rotulo: "Banheiros" },
-            { nome: "vagas", rotulo: "Vagas" },
-            { nome: "area_privativa", rotulo: "Área privativa (m²)" },
-            { nome: "area_total", rotulo: "Área total (m²)" },
-          ].map((campo) => (
-            <Campo key={campo.nome} nome={campo.nome} rotulo={campo.rotulo}>
+      <Cartao titulo="Características">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+          {NUMEROS.map((n) => (
+            <Campo key={n.nome} nome={n.nome} rotulo={n.rotulo}>
               <input
-                id={campo.nome}
-                name={campo.nome}
+                id={n.nome}
+                name={n.nome}
                 inputMode="decimal"
-                defaultValue={
-                  (imovel?.[campo.nome as keyof ImovelForm] as number | null) ?? ""
-                }
-                className={cn(entrada, "numeros")}
+                defaultValue={(imovel?.[n.nome] as number | null | undefined) ?? ""}
+                className={cn(campo, "numeros")}
               />
             </Campo>
           ))}
         </div>
-      </fieldset>
+      </Cartao>
 
-      <Campo
-        nome="descricao"
-        rotulo="Descrição"
-        dica="Uma linha em branco separa parágrafos no site."
-        className="mt-10"
-      >
-        <textarea
-          id="descricao"
-          name="descricao"
-          rows={10}
-          defaultValue={imovel?.descricao ?? ""}
-          className={cn(entrada, "resize-y leading-relaxed")}
-        />
-      </Campo>
-
-      <div className="mt-10 grid gap-6 sm:grid-cols-2">
-        <Campo nome="badge" rotulo="Selo" dica="Ex.: ÚLTIMAS UNIDADES. Vazio não mostra nada.">
-          <input id="badge" name="badge" defaultValue={imovel?.badge ?? ""} className={entrada} />
+      <Cartao titulo="Descrição">
+        <Campo
+          nome="descricao"
+          rotulo="Texto do anúncio"
+          dica="Uma linha em branco separa parágrafos no site."
+        >
+          <textarea
+            id="descricao"
+            name="descricao"
+            rows={9}
+            defaultValue={imovel?.descricao ?? ""}
+            className={cn(campo, "resize-y leading-relaxed")}
+          />
         </Campo>
+      </Cartao>
 
-        <div className="flex flex-col justify-end gap-4 pb-1">
-          <label className="flex items-center gap-3 text-[0.9375rem]">
-            <input
-              type="checkbox"
-              name="destaque"
-              defaultChecked={imovel?.destaque}
-              className="size-4 accent-[var(--accent)]"
-            />
-            Mostrar em destaque na home
-          </label>
-          <label className="flex items-center gap-3 text-[0.9375rem]">
-            <input
-              type="checkbox"
-              name="alto_padrao"
-              defaultChecked={imovel?.alto_padrao}
-              className="size-4 accent-[var(--accent)]"
-            />
-            Alto padrão
-          </label>
+      <Cartao titulo="Destaques">
+        <div className="divide-y divide-border-base">
+          <Interruptor
+            nome="destaque"
+            titulo="Mostrar na home"
+            descricao="Entra na vitrine da primeira página."
+            marcado={imovel?.destaque}
+          />
+          <Interruptor
+            nome="alto_padrao"
+            titulo="Alto padrão"
+            descricao="Marca o imóvel como alto padrão nos filtros."
+            marcado={imovel?.alto_padrao}
+          />
         </div>
-      </div>
 
-      {estado.mensagem ? (
-        <p className="mt-8 text-sm text-fg-muted">{estado.mensagem}</p>
-      ) : null}
+        <Campo
+          nome="badge"
+          rotulo="Selo sobre a foto"
+          dica="Ex.: Últimas unidades. Vazio não mostra nada."
+          className="mt-4"
+        >
+          <input id="badge" name="badge" defaultValue={imovel?.badge ?? ""} className={campo} />
+        </Campo>
+      </Cartao>
 
-      <div className="mt-10 flex items-center gap-4">
+      <BarraSalvar
+        mensagem={estado.mensagem ?? (estado.erros ? "Confira os campos marcados em vermelho." : undefined)}
+        tom={estado.ok ? "sucesso" : estado.mensagem || estado.erros ? "erro" : "neutro"}
+      >
         <Salvar novo={novo} />
-      </div>
+      </BarraSalvar>
     </form>
   );
 }

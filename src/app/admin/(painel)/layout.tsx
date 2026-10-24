@@ -1,12 +1,6 @@
-import Link from "next/link";
-
-import { AdminNav } from "@/components/admin/admin-nav";
-import { AvisoSenha } from "@/components/admin/aviso-senha";
-import { Avatar } from "@/components/admin/avatar";
-import { Logo } from "@/components/site/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { sair } from "@/app/actions/auth";
+import { AdminShell } from "@/components/admin/admin-shell";
 import { exigirPerfil } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminLayout({
   children,
@@ -15,50 +9,21 @@ export default async function AdminLayout({
 }) {
   const perfil = await exigirPerfil();
 
+  // O número de leads sem contato vira o selo da aba: quem abre o app já
+  // vê se tem alguém esperando resposta.
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("leads")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "novo");
+
   return (
-    <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 border-b border-border-base bg-bg/90 backdrop-blur-md">
-        <div className="flex h-16 items-center justify-between gap-4 px-5">
-          <div className="flex items-center gap-5">
-            <Logo href="/admin" tamanho="sm" />
-            <Link
-              href="/"
-              target="_blank"
-              className="hidden text-xs text-fg-muted underline-offset-4 hover:text-fg hover:underline sm:inline"
-            >
-              Ver o site
-            </Link>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/admin/conta"
-              className="flex items-center gap-2.5 text-sm text-fg-muted transition-colors hover:text-fg"
-            >
-              <Avatar url={perfil.avatar_url} nome={perfil.nome} tamanho="sm" />
-              <span className="hidden sm:inline">{perfil.nome}</span>
-            </Link>
-            <ThemeToggle />
-            <form action={sair}>
-              <button
-                type="submit"
-                className="rounded-full border border-border-base px-4 py-2 text-sm text-fg-muted transition-colors hover:border-border-strong hover:text-fg"
-              >
-                Sair
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      {perfil.senhaPropria ? null : <AvisoSenha />}
-
-      <div className="flex">
-        <AdminNav role={perfil.role} />
-        <main className="min-w-0 flex-1 px-5 pb-24 pt-8 lg:px-8 lg:pb-12">
-          {children}
-        </main>
-      </div>
-    </div>
+    <AdminShell
+      perfil={{ nome: perfil.nome, role: perfil.role, avatar_url: perfil.avatar_url }}
+      leadsNovos={count ?? 0}
+      semSenha={!perfil.senhaPropria}
+    >
+      {children}
+    </AdminShell>
   );
 }

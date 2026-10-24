@@ -1,32 +1,38 @@
-import { Plus } from "lucide-react";
+import { Building2, Plus, Search, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import {
+  Cabecalho,
+  Filtros,
+  Pagina,
+  Selo,
+  SeloSituacao,
+  Vazio,
+  botao,
+  campo,
+} from "@/components/admin/ui";
 import { exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn, formatPreco } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const STATUS: { chave: string; rotulo: string }[] = [
+export const metadata = { title: "Imóveis" };
+
+const STATUS = [
   { chave: "", rotulo: "Todos" },
-  { chave: "publicado", rotulo: "Publicados" },
+  { chave: "publicado", rotulo: "No ar" },
   { chave: "rascunho", rotulo: "Rascunhos" },
   { chave: "arquivado", rotulo: "Arquivados" },
 ];
-
-const COR_STATUS: Record<string, string> = {
-  publicado: "text-accent",
-  rascunho: "text-fg-muted",
-  arquivado: "text-fg-subtle",
-};
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function AdminImoveis({ searchParams }: { searchParams: Params }) {
   await exigirPerfil();
   const params = await searchParams;
-  const busca = typeof params.busca === "string" ? params.busca : "";
+  const busca = typeof params.busca === "string" ? params.busca.trim() : "";
 
   // searchParams é string livre; o enum do banco só aceita estes valores.
   const VALIDOS = ["publicado", "rascunho", "arquivado"] as const;
@@ -46,91 +52,93 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
   if (busca) q = q.ilike("titulo", `%${busca}%`);
 
   const { data: imoveis } = await q.order("updated_at", { ascending: false }).limit(200);
+  const total = imoveis?.length ?? 0;
+
+  const hrefStatus = (chave: string) => {
+    const qs = new URLSearchParams();
+    if (chave) qs.set("status", chave);
+    if (busca) qs.set("busca", busca);
+    const s = qs.toString();
+    return s ? `/admin/imoveis?${s}` : "/admin/imoveis";
+  };
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-display-sm">Imóveis</h1>
-          <p className="numeros mt-2 text-fg-muted">
-            {imoveis?.length ?? 0} no total
-          </p>
-        </div>
-        <Link
-          href="/admin/imoveis/novo"
-          className="flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm text-accent-fg transition-colors hover:bg-accent-hover"
-        >
-          <Plus className="size-4" strokeWidth={2} />
-          Cadastrar imóvel
-        </Link>
-      </div>
+    <Pagina>
+      <Cabecalho
+        titulo="Imóveis"
+        descricao={`${total} ${total === 1 ? "imóvel" : "imóveis"}${busca || status ? " neste filtro" : ""}`}
+        acoes={
+          <Link href="/admin/imoveis/novo" className={cn(botao.primario, "hidden sm:inline-flex")}>
+            <Plus className="size-5" strokeWidth={2} />
+            Cadastrar imóvel
+          </Link>
+        }
+      />
 
-      <form className="mt-8 flex gap-3">
+      <form role="search" className="relative">
+        <Search
+          className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-fg-subtle"
+          strokeWidth={1.6}
+        />
         <input
           name="busca"
+          type="search"
           defaultValue={busca}
-          placeholder="Buscar por título"
-          className="w-full max-w-sm border-b border-border-strong bg-transparent py-2.5 text-sm placeholder:text-fg-subtle focus:border-accent focus:outline-none"
+          placeholder="Buscar pelo título"
+          aria-label="Buscar imóvel pelo título"
+          className={cn(campo, "!mt-0 !rounded-full pl-12")}
         />
         {status ? <input type="hidden" name="status" value={status} /> : null}
       </form>
 
-      <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1 lg:mx-0 lg:px-0">
-        {STATUS.map((s) => (
-          <Link
-            key={s.chave}
-            href={s.chave ? `/admin/imoveis?status=${s.chave}` : "/admin/imoveis"}
-            className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-sm transition-colors",
-              status === s.chave
-                ? "border-accent bg-accent text-accent-fg"
-                : "border-border-base text-fg-muted hover:border-border-strong hover:text-fg",
-            )}
-          >
-            {s.rotulo}
-          </Link>
-        ))}
-      </div>
+      <Filtros
+        atual={status}
+        itens={STATUS.map((s) => ({ ...s, href: hrefStatus(s.chave) }))}
+      />
 
       {imoveis?.length ? (
-        <ul className="mt-8 divide-y divide-border-base border-y border-border-base">
+        <ul className="grid gap-3 lg:grid-cols-2">
           {imoveis.map((imovel) => {
-            const capa = [...(imovel.imagens ?? [])].sort(
-              (a, b) => a.ordem - b.ordem,
-            )[0];
+            const capa = [...(imovel.imagens ?? [])].sort((a, b) => a.ordem - b.ordem)[0];
             return (
-              <li key={imovel.id}>
+              <li key={imovel.id} className="min-w-0">
                 <Link
                   href={`/admin/imoveis/${imovel.id}`}
-                  className="flex items-center gap-4 py-3 transition-colors hover:bg-bg-subtle"
+                  className="flex h-full min-w-0 gap-3 rounded-2xl border border-border-base bg-bg-elevated p-3 shadow-[var(--shadow-card)] transition-colors hover:border-border-strong active:scale-[0.99]"
                 >
-                  <div className="relative size-16 shrink-0 overflow-hidden bg-bg-subtle">
+                  <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-bg-subtle">
                     {capa ? (
-                      <Image
-                        src={capa.url}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-cover"
+                      <Image src={capa.url} alt="" fill sizes="96px" className="object-cover" />
+                    ) : (
+                      <Building2
+                        className="absolute inset-0 m-auto size-7 text-fg-subtle"
+                        strokeWidth={1.4}
                       />
-                    ) : null}
+                    )}
                   </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[0.9375rem]">{imovel.titulo}</p>
-                    <p className="numeros truncate text-sm text-fg-muted">
-                      {imovel.ref} · {imovel.bairro ?? "sem bairro"}
-                    </p>
-                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-2 py-0.5">
+                    <div className="min-w-0">
+                      <p className="line-clamp-2 text-[0.9375rem] font-medium leading-snug">
+                        {imovel.titulo}
+                      </p>
+                      <p className="numeros mt-1 truncate text-sm text-fg-muted">
+                        {imovel.ref} · {imovel.bairro ?? "sem bairro"}
+                      </p>
+                    </div>
 
-                  <div className="hidden text-right sm:block">
-                    <p className="numeros text-[0.9375rem]">
-                      {formatPreco(imovel.preco)}
-                    </p>
-                    <p className={cn("text-xs capitalize", COR_STATUS[imovel.status])}>
-                      {imovel.status}
-                      {imovel.destaque ? " · destaque" : ""}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <p className="numeros text-[0.9375rem] font-semibold">
+                        {formatPreco(imovel.preco)}
+                      </p>
+                      <SeloSituacao situacao={imovel.status} />
+                      {imovel.destaque ? (
+                        <Selo tom="azul">
+                          <Star className="size-3" strokeWidth={2} />
+                          Destaque
+                        </Selo>
+                      ) : null}
+                    </div>
                   </div>
                 </Link>
               </li>
@@ -138,21 +146,22 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
           })}
         </ul>
       ) : (
-        <div className="mt-12 border-t border-border-base pt-10">
-          <p className="font-display text-2xl">Nenhum imóvel aqui.</p>
-          <p className="mt-3 max-w-[48ch] text-pretty leading-relaxed text-fg-muted">
-            {busca || status
-              ? "Nada com esse filtro. Limpe a busca para ver todos."
-              : "Cadastre o primeiro imóvel para ele aparecer no site."}
-          </p>
-          <Link
-            href="/admin/imoveis/novo"
-            className="mt-6 inline-block rounded-full bg-accent px-6 py-3 text-sm text-accent-fg"
-          >
-            Cadastrar imóvel
-          </Link>
-        </div>
+        <Vazio
+          icone={Building2}
+          titulo="Nenhum imóvel aqui"
+          texto={
+            busca || status
+              ? "Nada com esse filtro. Limpe a busca ou escolha Todos."
+              : "Cadastre o primeiro imóvel para ele aparecer no site."
+          }
+          acao={
+            <Link href="/admin/imoveis/novo" className={botao.primario}>
+              <Plus className="size-5" strokeWidth={2} />
+              Cadastrar imóvel
+            </Link>
+          }
+        />
       )}
-    </div>
+    </Pagina>
   );
 }

@@ -1,5 +1,6 @@
 import { TeamForm } from "@/components/admin/team-form";
 import { TeamRow, type Membro } from "@/components/admin/team-row";
+import { Cabecalho, Pagina } from "@/components/admin/ui";
 import { exigirAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,39 +19,30 @@ export default async function Equipe() {
     .order("nome");
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="font-display text-display-sm">Equipe</h1>
-      <p className="mt-2 max-w-[56ch] text-pretty leading-relaxed text-fg-muted">
-        Quem tem acesso ao painel. Cada pessoa pode trocar a própria senha em
-        Conta; aqui você define a primeira e resolve esquecimento.
-      </p>
+    <Pagina largura="max-w-3xl">
+      <Cabecalho
+        titulo="Equipe"
+        descricao="Quem tem acesso ao painel. Cada pessoa troca a própria senha em Minha conta; aqui você define a primeira e resolve esquecimento."
+      />
 
-      <section className="mt-12">
-        <h2 className="font-display text-2xl">
+      <section className="space-y-3">
+        <h2 className="font-display text-xl">
           Pessoas com acesso{" "}
-          <span className="numeros text-base text-fg-muted">
-            ({membros?.length ?? 0})
-          </span>
+          <span className="numeros text-base font-normal text-fg-muted">({membros?.length ?? 0})</span>
         </h2>
 
         {membros?.length ? (
-          <ul className="mt-5 divide-y divide-border-base border-y border-border-base">
+          <ul className="grid gap-3">
             {membros.map((membro) => (
-              <TeamRow
-                key={membro.id}
-                membro={membro as Membro}
-                euSou={admin.id}
-              />
+              <TeamRow key={membro.id} membro={membro as Membro} euSou={admin.id} />
             ))}
           </ul>
         ) : (
-          <p className="mt-5 text-fg-muted">Nenhum acesso cadastrado ainda.</p>
+          <p className="text-fg-muted">Nenhum acesso cadastrado ainda.</p>
         )}
       </section>
 
-      <div className="mt-16 border-t border-border-base pt-12">
-        <TeamForm />
-      </div>
-    </div>
+      <TeamForm />
+    </Pagina>
   );
 }
