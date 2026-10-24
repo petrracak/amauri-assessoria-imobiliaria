@@ -74,6 +74,7 @@ async function revalidarImovel(
 
   if (data?.slug) revalidatePath(`/imoveis/${data.slug}`);
 
+  revalidatePath("/admin", "layout"); // limpa o cache do painel no aparelho
   revalidatePath("/admin/imoveis");
   revalidatePath(`/admin/imoveis/${propertyId}`);
   revalidatePath("/imoveis");
@@ -187,6 +188,7 @@ export async function apagarImovel(id: string) {
   await supabase.from("properties").delete().eq("id", id);
 
   if (antes?.slug) revalidatePath(`/imoveis/${antes.slug}`);
+  revalidatePath("/admin", "layout"); // limpa o cache do painel no aparelho
   revalidatePath("/admin/imoveis");
   revalidatePath("/imoveis");
   revalidatePath("/");

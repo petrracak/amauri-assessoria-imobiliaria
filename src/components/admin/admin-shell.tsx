@@ -86,6 +86,7 @@ function LinkLateral({
   return (
     <Link
       href={item.href}
+      prefetch
       aria-current={ativo ? "page" : undefined}
       className={cn(
         "flex min-h-11 items-center gap-3 rounded-xl px-3 text-[0.9375rem] transition-colors",
@@ -274,6 +275,7 @@ function ItemFolha({
   return (
     <Link
       href={href}
+      prefetch={externo ? false : true}
       onClick={aoEscolher}
       target={externo ? "_blank" : undefined}
       className="flex min-h-14 items-center gap-4 rounded-2xl px-2 transition-colors active:bg-bg-subtle"
@@ -337,6 +339,7 @@ function AbaInferior({
       <Link
         key={item.href}
         href={item.href}
+        prefetch
         aria-current={ativo ? "page" : undefined}
         className={cn(
           "flex flex-col items-center justify-center gap-0.5 text-[0.6875rem] font-medium transition-colors",

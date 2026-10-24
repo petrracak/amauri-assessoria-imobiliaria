@@ -32,10 +32,13 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // getUser() revalida o token no servidor; getSession() apenas lê o cookie.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() confere a assinatura do token localmente, com a chave pública
+  // do projeto (ES256, em cache). getUser() iria até o Supabase a cada toque
+  // — uma viagem a Oregon, por página aberta. O token vale uma hora; a
+  // renovação continua acontecendo aqui. Quem for suspenso perde o acesso na
+  // checagem do perfil (exigirPerfil), que não depende do token.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const painel = pathname.startsWith("/admin");

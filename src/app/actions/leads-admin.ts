@@ -11,6 +11,7 @@ export async function mudarStatusLead(id: string, status: StatusLead) {
   await exigirPerfil();
   const supabase = await createClient();
   await supabase.from("leads").update({ status }).eq("id", id);
+  revalidatePath("/admin", "layout");
   revalidatePath("/admin/leads");
   revalidatePath("/admin");
 }

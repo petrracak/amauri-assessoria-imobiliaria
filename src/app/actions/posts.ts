@@ -110,7 +110,8 @@ export async function salvarPost(
 
     if (error) return { ok: false, mensagem: `Não deu para salvar: ${error.message}` };
 
-    revalidatePath("/admin/posts");
+    revalidatePath("/admin", "layout");
+  revalidatePath("/admin/posts");
     revalidatePath("/blog");
     revalidatePath(`/blog/${slug}`);
     return { ok: true, id, mensagem: "Alterações salvas." };
@@ -128,6 +129,7 @@ export async function salvarPost(
 
   if (error) return { ok: false, mensagem: `Não deu para criar: ${error.message}` };
 
+  revalidatePath("/admin", "layout");
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
   return { ok: true, id: data.id, mensagem: "Texto criado." };
@@ -150,6 +152,7 @@ export async function apagarPost(id: string) {
 
   await supabase.from("posts").delete().eq("id", id);
 
+  revalidatePath("/admin", "layout");
   revalidatePath("/admin/posts");
   revalidatePath("/blog");
 }

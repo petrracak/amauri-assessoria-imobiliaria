@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Cache de navegação no aparelho. Páginas do painel prefetchadas
+    // (prefetch={true}) valem por static; as visitadas valem por dynamic.
+    // Toda alteração feita pelo painel limpa isso (revalidatePath no layout
+    // /admin), então o cache nunca mostra o que a própria pessoa acabou de
+    // mudar; só um lead novo vindo do site pode demorar até 1 minuto.
+    staleTimes: { dynamic: 30, static: 60 },
+  },
   turbopack: {
     rules: {
       "*.css": {
