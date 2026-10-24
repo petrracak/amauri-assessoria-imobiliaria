@@ -30,20 +30,46 @@ produção não precisa dela.
 
 ## Acesso ao painel
 
-Não há senha: a pessoa informa o e-mail em `/admin/login` e recebe um link.
+A equipe entra em `/admin/login` pelo nome ou pelo e-mail, com senha. Quem
+tem e-mail de verdade pode pedir um link de acesso no lugar da senha.
 
-Para dar acesso a alguém:
+Contas novas saem de `/admin/equipe`, no próprio painel: um administrador
+cria a conta, escolhe entre `admin` e `corretor` e define a primeira senha
+ali mesmo. Administrador enxerga também as configurações e pode apagar
+imóveis.
+
+Pela linha de comando, para o primeiro acesso de um projeto novo:
 
 ```bash
-node scripts/criar-usuario.mjs email@exemplo.com "Nome da Pessoa" corretor
+node scripts/criar-equipe.mjs
 ```
 
-O terceiro argumento é `admin` ou `corretor`. Administrador enxerga também as
-configurações e pode apagar imóveis.
+As contas nascem sem senha de propósito — quem define a primeira é um
+administrador, pelo painel. Assim a senha não passa por arquivo nem por
+histórico de terminal.
 
-> O envio de e-mail usa o serviço padrão do Supabase, que limita a poucas
-> mensagens por hora. Antes de liberar para a equipe, configure um SMTP
-> próprio em Authentication → Emails.
+## E-mails do painel
+
+Sem SMTP próprio o Supabase usa o servidor de cortesia dele: duas mensagens
+por hora, remetente genérico e textos em inglês que ele não deixa trocar.
+
+Com uma conta na [Brevo](https://www.brevo.com) (300 e-mails por dia, sem
+custo e sem mexer em DNS), dois comandos resolvem:
+
+```bash
+node scripts/configurar-smtp.mjs
+node scripts/traduzir-emails.mjs
+```
+
+O primeiro pede os dados da Brevo e grava no Supabase — a chave é digitada
+na hora, não aparece na tela e não fica em arquivo nenhum. O segundo põe as
+cinco mensagens em português, com a marca. Para conferir o visual antes:
+
+```bash
+node scripts/traduzir-emails.mjs --previa /tmp/emails
+```
+
+Os dois precisam de `SUPABASE_ACCESS_TOKEN` no ambiente.
 
 ## Banco de dados
 
