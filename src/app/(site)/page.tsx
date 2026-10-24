@@ -66,9 +66,14 @@ export default async function Home() {
                 height={892}
                 fetchPriority="high"
                 decoding="async"
-                // object-top: quando sobra altura, o corte tira o rodapé da
-                // arte, nunca o rosto.
-                className="absolute inset-0 -z-10 size-full object-cover object-top"
+                // Ancorado entre o topo e o centro: o corte vertical tira um
+                // pouco de céu em cima e menos do corpo embaixo.
+                //
+                // Acima de 2:1 a tela fica mais larga que a arte e o corte
+                // comeria o Amauri. Aí ela passa a caber inteira, encostada
+                // à direita — a sobra à esquerda é o mesmo azul do fundo da
+                // seção, então não aparece emenda.
+                className="absolute inset-0 -z-10 size-full object-cover object-[center_28%] [@media(min-aspect-ratio:2/1)]:object-contain [@media(min-aspect-ratio:2/1)]:object-right"
               />
             </picture>
           )}
@@ -116,9 +121,11 @@ export default async function Home() {
               </button>
             </form>
 
-            <div className="hero-item mt-14 hidden items-center gap-3 text-xs uppercase tracking-widest text-white/50 lg:flex">
+            {/* Frase inteira em caixa alta com espaçamento largo fica difícil
+                de ler; em caixa normal ela convida em vez de gritar. */}
+            <div className="hero-item mt-14 hidden items-center gap-3 text-sm text-white/60 lg:flex">
               <ArrowDown className="size-4 animate-bounce" strokeWidth={1.5} />
-              Role para ver o acervo
+              Role para baixo e encontre o seu novo imóvel
             </div>
           </div>
         </section>
