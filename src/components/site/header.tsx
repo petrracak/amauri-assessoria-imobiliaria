@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { LinkFavoritos } from "@/components/site/link-favoritos";
 import { Logo } from "@/components/site/logo";
 import { MegaMenu } from "@/components/site/mega-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -140,6 +141,7 @@ export function Header({
         </nav>
 
         <div className="flex items-center gap-2">
+          <LinkFavoritos claro={transparente} />
           <ThemeToggle claro={transparente} />
 
           <a

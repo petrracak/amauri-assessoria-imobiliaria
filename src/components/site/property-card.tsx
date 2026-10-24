@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
+import { BotaoFavorito } from "@/components/site/botao-favorito";
 import { SpecsLinha, specsDe } from "@/components/site/specs";
 import type { ImovelCard } from "@/lib/queries";
 import { cn, formatPreco } from "@/lib/utils";
@@ -74,11 +75,14 @@ export function PropertyCard({
             <span />
           )}
 
-          {fotos.length > 1 ? (
-            <span className="numeros bg-bg/90 px-2.5 py-1 text-[0.6875rem] text-fg-muted">
-              {fotos.length} fotos
-            </span>
-          ) : null}
+          <span className="flex items-center gap-2">
+            {fotos.length > 1 ? (
+              <span className="numeros bg-bg/90 px-2.5 py-1 text-[0.6875rem] text-fg-muted">
+                {fotos.length} fotos
+              </span>
+            ) : null}
+            <BotaoFavorito refImovel={imovel.ref} titulo={imovel.titulo} />
+          </span>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BotaoFavorito } from "@/components/site/botao-favorito";
 import { Footer } from "@/components/site/footer";
 import { Gallery } from "@/components/site/gallery";
 import { SiteHeader } from "@/components/site/site-header";
@@ -119,14 +120,21 @@ export default async function ImovelPage({ params }: { params: Params }) {
               </p>
             ) : null}
 
-            <a
-              href={whatsappImovel}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-7 block rounded-full bg-accent px-7 py-4 text-center text-accent-fg transition-colors hover:bg-accent-hover"
-            >
-              Perguntar sobre este imóvel
-            </a>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <a
+                href={whatsappImovel}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 rounded-full bg-accent px-7 py-4 text-center text-accent-fg transition-colors hover:bg-accent-hover"
+              >
+                Perguntar sobre este imóvel
+              </a>
+              <BotaoFavorito
+                refImovel={imovel.ref}
+                titulo={imovel.titulo}
+                variante="linha"
+              />
+            </div>
 
             {imovel.endereco ? (
               <p className="mt-6 text-pretty text-sm leading-relaxed text-fg-muted">

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, DM_Sans } from "next/font/google";
+import Script from "next/script";
 
 import { ServiceWorker } from "@/components/service-worker";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -72,21 +73,19 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${dmSans.variable} ${archivo.variable}`}
     >
-      <head>
-        {/* Roda antes da pintura: quem já viu a abertura nesta sessão não
-            chega a enxergar um piscar dela. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{if(sessionStorage.getItem('amauri:intro'))document.documentElement.dataset.intro='visto'}catch(e){}",
-          }}
-        />
-      </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
         </ThemeProvider>
         <ServiceWorker />
+
+        {/* Precisa rodar antes da hidratação: quem já viu a abertura nesta
+            sessão não chega a enxergar um piscar dela. Um <script> cru na
+            árvore do React não executa e ainda quebra a hidratação — por
+            isso next/script com beforeInteractive. */}
+        <Script id="intro-visto" strategy="beforeInteractive">
+          {`try{if(sessionStorage.getItem('amauri:intro'))document.documentElement.dataset.intro='visto'}catch(e){}`}
+        </Script>
       </body>
     </html>
   );

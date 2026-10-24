@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Filtros, FiltrosAplicados, type FiltrosAtivos } from "@/components/site/filtros";
+import { interpretarBusca } from "@/lib/busca-inteligente";
 import { Footer } from "@/components/site/footer";
 import { PropertyCard } from "@/components/site/property-card";
 import { SiteHeader } from "@/components/site/site-header";
 import { FAIXAS_PRECO, getFacetas, getImoveis, type Ordenacao } from "@/lib/queries";
+import { redirect } from "next/navigation";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 export const revalidate = 300;
@@ -41,20 +43,41 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
     ordenacao: umValor(params.ordenacao),
   };
 
+  const facetasParaBusca = await getFacetas();
+
+  // A frase vira filtro; o que a pessoa escolheu na lateral tem prioridade,
+  // para um clique nunca ser desfeito pelo texto digitado antes.
+  const lida = atuais.busca
+    ? interpretarBusca(atuais.busca, {
+        tipos: facetasParaBusca.tipos.map((x) => x.nome),
+        bairros: facetasParaBusca.bairros.map((x) => x.nome),
+      })
+    : null;
+
+  // Buscou pela referência: leva direto ao imóvel, sem passar pela lista.
+  if (lida?.ref) {
+    const [achado] = await getImoveis({ busca: lida.ref }, 1);
+    if (achado) redirect(`/imoveis/${achado.slug}`);
+  }
+
   const faixa = FAIXAS_PRECO.find((f) => f.chave === atuais.faixa);
   const ordenacao = (ORDENACOES.find((o) => o.valor === atuais.ordenacao)?.valor ??
     "destaque") as Ordenacao;
 
-  const [config, facetas, imoveis] = await Promise.all([
+  const facetas = facetasParaBusca;
+  const [config, imoveis] = await Promise.all([
     getConfig(),
-    getFacetas(),
     getImoveis({
-      tipo: atuais.tipo,
-      bairro: atuais.bairro,
-      busca: atuais.busca,
-      dormitorios: atuais.dormitorios ? Number(atuais.dormitorios) : undefined,
-      precoMin: faixa?.min,
-      precoMax: faixa?.max ?? undefined,
+      tipo: atuais.tipo ?? lida?.tipo,
+      bairro: atuais.bairro ?? lida?.bairro,
+      busca: lida?.texto ?? (lida ? undefined : atuais.busca),
+      dormitorios: atuais.dormitorios
+        ? Number(atuais.dormitorios)
+        : lida?.dormitorios,
+      suites: lida?.suites,
+      vagas: lida?.vagas,
+      precoMin: faixa?.min ?? lida?.precoMin,
+      precoMax: (faixa?.max ?? undefined) ?? lida?.precoMax,
       ordenacao,
     }),
   ]);
@@ -128,6 +151,26 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
                 ))}
               </div>
             </div>
+
+            {lida && lida.entendido.length > 0 ? (
+              // Mostrar o que foi lido evita o susto de ver a lista encolher
+              // sem explicação — e ensina o que a busca entende.
+              <p className="mt-5 text-sm text-fg-muted">
+                Entendi da sua busca:{" "}
+                {lida.entendido.map((e, i) => (
+                  <span key={e.chave}>
+                    {i > 0 ? " · " : ""}
+                    <span className="text-fg">{e.rotulo}</span>
+                  </span>
+                ))}
+                {lida.texto ? (
+                  <>
+                    {" · "}
+                    <span className="text-fg">“{lida.texto}”</span>
+                  </>
+                ) : null}
+              </p>
+            ) : null}
 
             <div className="mt-5">
               <FiltrosAplicados atuais={atuais} rotulos={rotulos} />

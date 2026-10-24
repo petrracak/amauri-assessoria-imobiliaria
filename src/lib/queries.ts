@@ -60,6 +60,8 @@ export type FiltroImoveis = {
   precoMin?: number;
   precoMax?: number;
   dormitorios?: number;
+  suites?: number;
+  vagas?: number;
   busca?: string;
   ordenacao?: Ordenacao;
 };
@@ -76,6 +78,8 @@ export async function getImoveis(filtro: FiltroImoveis = {}, limite = 48) {
   if (filtro.precoMin) q = q.gte("preco", filtro.precoMin);
   if (filtro.precoMax) q = q.lte("preco", filtro.precoMax);
   if (filtro.dormitorios) q = q.gte("dormitorios", filtro.dormitorios);
+  if (filtro.suites) q = q.gte("suites", filtro.suites);
+  if (filtro.vagas) q = q.gte("vagas", filtro.vagas);
   if (filtro.busca) {
     // Busca por referência (#026) ou texto livre.
     const so_digitos = filtro.busca.replace(/\D/g, "");
