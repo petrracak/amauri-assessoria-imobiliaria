@@ -6,9 +6,10 @@
  * O Supabase só aceita template próprio depois que o projeto tem SMTP
  * próprio — rode scripts/configurar-smtp.mjs antes.
  *
- * O cabeçalho é tipográfico de propósito: quase todo cliente de e-mail
- * bloqueia imagem por padrão, e um logo que não carrega deixa um buraco no
- * topo da mensagem.
+ * O cabeçalho usa o logo branco servido pelo próprio site. O endereço vem
+ * de {{ .SiteURL }}, variável do Supabase, então acompanha o domínio quando
+ * ele trocar. Cliente que bloqueia imagem mostra o texto alternativo, que
+ * herda a cor e o fundo do cabeçalho e continua legível.
  */
 const PROJETO = "yumksmypwjyzvupetpgg";
 
@@ -27,9 +28,8 @@ function email({ titulo, texto, botao, rodape }) {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(8,24,40,.08);">
 
-        <tr><td style="background:${TINTA};padding:28px 32px;">
-          <div style="font-size:22px;font-weight:700;letter-spacing:.14em;color:#ffffff;">AMAURI</div>
-          <div style="margin-top:6px;font-size:10px;letter-spacing:.22em;color:rgba(255,255,255,.65);">ASSESSORIA IMOBILIÁRIA</div>
+        <tr><td style="background:${TINTA};padding:30px 32px;">
+          <img src="{{ .SiteURL }}/logo-amauri-branca.png" width="168" height="75" alt="AMAURI · Assessoria Imobiliária" style="display:block;border:0;outline:none;width:168px;height:auto;font-size:18px;font-weight:700;letter-spacing:.14em;color:#ffffff;">
         </td></tr>
 
         <tr><td style="padding:36px 32px 32px;">
@@ -125,9 +125,13 @@ if (previa !== -1) {
   for (const [chave, valor] of Object.entries(config)) {
     if (!chave.endsWith("_content")) continue;
     const nome = chave.replace("mailer_templates_", "").replace("_content", "");
-    // O token do Supabase não vale nada fora do envio real.
     const arquivo = `${pasta}/${nome}.html`;
-    await writeFile(arquivo, valor.replaceAll("{{ .ConfirmationURL }}", "#"));
+    await writeFile(
+      arquivo,
+      valor
+        .replaceAll("{{ .ConfirmationURL }}", "#")
+        .replaceAll("{{ .SiteURL }}", "https://amauri-assessoria-imobiliaria-ebon.vercel.app"),
+    );
     console.log(arquivo);
   }
   process.exit(0);
