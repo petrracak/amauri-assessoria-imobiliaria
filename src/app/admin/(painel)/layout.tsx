@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AdminNav } from "@/components/admin/admin-nav";
+import { AvisoSenha } from "@/components/admin/aviso-senha";
 import { Avatar } from "@/components/admin/avatar";
 import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -57,6 +58,8 @@ export default async function AdminLayout({
           </div>
         </div>
       </header>
+
+      {perfil.senhaPropria ? null : <AvisoSenha />}
 
       <div className="flex">
         <AdminNav role={perfil.role} />

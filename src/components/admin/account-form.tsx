@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +17,7 @@ const MINIMO = 8;
  * do e-mail — que é o caminho de quem acabou de ser adicionado à equipe.
  */
 export function AccountForm() {
+  const router = useRouter();
   const [senha, setSenha] = useState("");
   const [confirma, setConfirma] = useState("");
   const [ocupado, setOcupado] = useState(false);
@@ -37,7 +39,10 @@ export function AccountForm() {
 
     setOcupado(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password: senha });
+    const { error } = await supabase.auth.updateUser({
+      password: senha,
+      data: { senha_propria: true },
+    });
     setOcupado(false);
 
     if (error) {
@@ -52,6 +57,8 @@ export function AccountForm() {
     setSenha("");
     setConfirma("");
     setPronto(true);
+    // O aviso de "crie uma senha" mora no layout: relê para ele sumir.
+    router.refresh();
   }
 
   return (

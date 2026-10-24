@@ -9,6 +9,8 @@ export type Perfil = {
   role: "admin" | "corretor";
   ativo: boolean;
   avatar_url: string | null;
+  /** Já definiu a própria senha em /admin/conta. */
+  senhaPropria: boolean;
 };
 
 /**
@@ -32,7 +34,14 @@ export async function exigirPerfil(): Promise<Perfil> {
 
   if (!perfil || !perfil.ativo) redirect("/admin/login?erro=sem-acesso");
 
-  return perfil as Perfil;
+  return {
+    ...(perfil as Omit<Perfil, "senhaPropria">),
+    // O Supabase grava uma senha aleatória em conta criada sem senha, então
+    // o banco não distingue quem tem senha de quem não tem. A marca é gravada
+    // quando a pessoa salva a própria senha. Uma senha que o administrador
+    // definiu não conta: é provisória, e o aviso lembra de trocar.
+    senhaPropria: user.user_metadata?.senha_propria === true,
+  };
 }
 
 export async function exigirAdmin(): Promise<Perfil> {
