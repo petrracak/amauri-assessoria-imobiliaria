@@ -52,6 +52,8 @@ export async function getDestaques(limite = 6) {
   return ordenarImagens((data ?? []) as unknown as ImovelCard[]);
 }
 
+export type Ordenacao = "destaque" | "menor-preco" | "maior-preco" | "recentes";
+
 export type FiltroImoveis = {
   tipo?: string;
   bairro?: string;
@@ -59,6 +61,7 @@ export type FiltroImoveis = {
   precoMax?: number;
   dormitorios?: number;
   busca?: string;
+  ordenacao?: Ordenacao;
 };
 
 export async function getImoveis(filtro: FiltroImoveis = {}, limite = 48) {
@@ -81,10 +84,23 @@ export async function getImoveis(filtro: FiltroImoveis = {}, limite = 48) {
       : q.textSearch("busca", filtro.busca, { type: "websearch", config: "portuguese" });
   }
 
-  const { data, error } = await q
-    .order("destaque", { ascending: false })
-    .order("ordem", { ascending: false })
-    .limit(limite);
+  // nullsFirst: false mantém "sob consulta" no fim, e não no topo da lista
+  // de menor preço, que seria a leitura errada.
+  switch (filtro.ordenacao) {
+    case "menor-preco":
+      q = q.order("preco", { ascending: true, nullsFirst: false });
+      break;
+    case "maior-preco":
+      q = q.order("preco", { ascending: false, nullsFirst: false });
+      break;
+    case "recentes":
+      q = q.order("created_at", { ascending: false });
+      break;
+    default:
+      q = q.order("destaque", { ascending: false }).order("ordem", { ascending: false });
+  }
+
+  const { data, error } = await q.limit(limite);
 
   if (error) throw error;
   return ordenarImagens((data ?? []) as unknown as ImovelCard[]);
@@ -116,7 +132,7 @@ export async function getFacetas() {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("properties")
-    .select("tipo, bairro, preco")
+    .select("tipo, bairro, preco, dormitorios")
     .eq("status", "publicado");
 
   if (error) throw error;
@@ -133,9 +149,43 @@ export async function getFacetas() {
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "pt-BR"))
       .map(([nome, total]) => ({ nome, total }));
 
+  // Contagem por dormitório, com 4 ou mais somados num grupo só: acima
+  // disso o filtro deixa de ajudar e vira lista de exceções.
+  const dormitorios = [2, 3, 4].map((n) => ({
+    minimo: n,
+    rotulo: n >= 4 ? "4 ou mais" : String(n),
+    total: (data ?? []).filter((l) =>
+      n >= 4 ? (l.dormitorios ?? 0) >= 4 : l.dormitorios === n,
+    ).length,
+  })).filter((d) => d.total > 0);
+
+  const precos = (data ?? [])
+    .map((l) => l.preco)
+    .filter((p): p is number => typeof p === "number");
+
+  const faixas = FAIXAS_PRECO.map((faixa) => ({
+    ...faixa,
+    total: precos.filter(
+      (p) => p >= faixa.min && (faixa.max === null || p < faixa.max),
+    ).length,
+  })).filter((f) => f.total > 0);
+
   return {
     tipos: ordenar(tipos),
     bairros: ordenar(bairros),
+    dormitorios,
+    faixas,
     total: data?.length ?? 0,
+    menorPreco: precos.length ? Math.min(...precos) : null,
   };
 }
+
+/** Faixas pensadas para o estoque de Santarém, não cortes genéricos. */
+export const FAIXAS_PRECO = [
+  { chave: "ate-700", rotulo: "Até R$ 700 mil", min: 0, max: 700_000 },
+  { chave: "700-1m", rotulo: "R$ 700 mil a 1 milhão", min: 700_000, max: 1_000_000 },
+  { chave: "1m-2m", rotulo: "R$ 1 a 2 milhões", min: 1_000_000, max: 2_000_000 },
+  { chave: "2m+", rotulo: "Acima de R$ 2 milhões", min: 2_000_000, max: null },
+] as const;
+
+export type Facetas = Awaited<ReturnType<typeof getFacetas>>;

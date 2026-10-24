@@ -279,36 +279,6 @@ html[data-intro="visto"] .hero-item {
 }
 
 @layer utilities {
-  /* -----------------------------------------------------------------
-     Fotografia em preto e branco que ganha cor na interação.
-     Além do efeito, resolve um problema real: as fotos vieram de fontes
-     diferentes, com luz e cor desencontradas. Dessaturar unifica o
-     conjunto; a cor volta quando a pessoa demonstra interesse.
-     ----------------------------------------------------------------- */
-  .foto-sobria img,
-  img.foto-sobria {
-    filter: grayscale(1) contrast(1.04);
-    transition:
-      filter 0.6s var(--ease-out-soft),
-      transform 0.8s var(--ease-out-soft);
-  }
-
-  .group:hover .foto-sobria img,
-  .group:focus-visible .foto-sobria img,
-  .group:hover img.foto-sobria,
-  .group:focus-visible img.foto-sobria,
-  .foto-sobria:hover img {
-    filter: grayscale(0) contrast(1);
-  }
-
-  /* No toque não existe hover: a cor entra quando o card aparece. */
-  @media (hover: none) {
-    .foto-sobria img,
-    img.foto-sobria {
-      filter: none;
-    }
-  }
-
   /* Respiro lateral consistente; no celular o conteúdo nunca encosta na borda. */
   .container-site {
     width: 100%;
@@ -364,5 +334,27 @@ html[data-intro="visto"] .hero-item {
 
   .campo-tinta .linha-encontro {
     border-top-color: #2b3c5a;
+  }
+}
+
+/* Entrada do convite de saída: sobe e assenta, sem salto. */
+.saida-painel {
+  animation: saida-entra 0.45s var(--ease-out-soft) both;
+}
+
+@keyframes saida-entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saida-painel {
+    animation: none;
   }
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getPost, getPosts } from "@/lib/blog";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
@@ -53,7 +53,7 @@ export default async function PostPage({ params }: { params: Params }) {
 
   return (
     <>
-      <Header whatsapp={whatsapp} />
+      <SiteHeader />
 
       <main>
         <article className="container-site py-12 lg:py-16">

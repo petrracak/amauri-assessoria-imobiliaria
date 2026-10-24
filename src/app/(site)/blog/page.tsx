@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getCategorias, getPosts, type PostCard } from "@/lib/blog";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
@@ -88,7 +88,7 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
 
   return (
     <>
-      <Header whatsapp={whatsapp} />
+      <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
         <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">

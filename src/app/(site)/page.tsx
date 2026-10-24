@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { PropertyCard } from "@/components/site/property-card";
 import { Revela } from "@/components/site/revela";
@@ -34,7 +34,7 @@ export default async function Home() {
 
   return (
     <>
-      <Header whatsapp={whatsapp} sobreposto />
+      <SiteHeader sobreposto />
 
       <main>
         {/* ---------------------------------------------------- primeira dobra */}
@@ -241,7 +241,7 @@ export default async function Home() {
             </Revela>
 
             {destaques[1]?.imagens?.[0] ? (
-              <Revela atraso={120} className="foto-sobria relative min-h-[22rem] lg:min-h-0">
+              <Revela atraso={120} className="relative min-h-[22rem] lg:min-h-0">
                 <Image
                   src={destaques[1].imagens[0].url}
                   alt=""

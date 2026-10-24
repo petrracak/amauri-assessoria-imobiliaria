@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getFacetas } from "@/lib/queries";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
@@ -20,7 +20,7 @@ export default async function Sobre() {
 
   return (
     <>
-      <Header whatsapp={whatsapp} />
+      <SiteHeader />
 
       <main>
         <section className="container-site py-16 lg:py-24">

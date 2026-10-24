@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 export const revalidate = 3600;
@@ -19,7 +19,7 @@ export default async function Privacidade() {
 
   return (
     <>
-      <Header whatsapp={whatsapp} />
+      <SiteHeader />
 
       <main className="container-site py-16 lg:py-24">
         <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">

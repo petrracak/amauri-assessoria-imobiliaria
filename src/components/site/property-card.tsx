@@ -40,7 +40,7 @@ export function PropertyCard({
       onMouseEnter={() => temSegunda && setIndice(1)}
       onMouseLeave={() => setIndice(0)}
     >
-      <div className={cn("foto-sobria relative overflow-hidden bg-bg-subtle", proporcao)}>
+      <div className={cn("relative overflow-hidden bg-bg-subtle", proporcao)}>
         {foto ? (
           <Image
             src={foto.url}
@@ -52,7 +52,7 @@ export function PropertyCard({
                 ? "(max-width: 768px) 100vw, 66vw"
                 : "(max-width: 768px) 100vw, 33vw"
             }
-            className="object-cover"
+            className="object-cover transition-transform duration-[900ms] ease-[var(--ease-out-soft)] group-hover:scale-[1.04]"
           />
         ) : (
           <div className="grid h-full place-items-center text-sm text-fg-subtle">

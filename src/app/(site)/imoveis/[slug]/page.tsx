@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { Footer } from "@/components/site/footer";
 import { Gallery } from "@/components/site/gallery";
-import { Header } from "@/components/site/header";
+import { SiteHeader } from "@/components/site/site-header";
 import { PropertyCard } from "@/components/site/property-card";
 import { specsDe, type Spec } from "@/components/site/specs";
 import { getImoveis, getImovel } from "@/lib/queries";
@@ -80,7 +80,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
   return (
     <>
-      <Header whatsapp={whatsappGeral} />
+      <SiteHeader />
 
       <main className="container-site pb-10 pt-8 lg:py-12">
         <nav className="mb-6 text-sm text-fg-muted">

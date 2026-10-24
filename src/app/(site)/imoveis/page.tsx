@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { Filtros, FiltrosAplicados, type FiltrosAtivos } from "@/components/site/filtros";
 import { Footer } from "@/components/site/footer";
-import { Header } from "@/components/site/header";
 import { PropertyCard } from "@/components/site/property-card";
-import { getFacetas, getImoveis } from "@/lib/queries";
+import { SiteHeader } from "@/components/site/site-header";
+import { FAIXAS_PRECO, getFacetas, getImoveis, type Ordenacao } from "@/lib/queries";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
-import { cn } from "@/lib/utils";
 
 export const revalidate = 300;
 
@@ -18,141 +18,155 @@ export const metadata: Metadata = {
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
+const ORDENACOES: { valor: Ordenacao; rotulo: string }[] = [
+  { valor: "destaque", rotulo: "Destaques" },
+  { valor: "menor-preco", rotulo: "Menor preço" },
+  { valor: "maior-preco", rotulo: "Maior preço" },
+  { valor: "recentes", rotulo: "Mais recentes" },
+];
+
 function umValor(v: string | string[] | undefined) {
   return Array.isArray(v) ? v[0] : v;
 }
 
-/** Pílula de filtro: some do DOM quando já está aplicada em outra direção. */
-function Pilula({
-  href,
-  ativo,
-  children,
-}: {
-  href: string;
-  ativo: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={ativo ? "true" : undefined}
-      className={cn(
-        "shrink-0 rounded-full border px-4 py-2 text-sm transition-colors",
-        ativo
-          ? "border-accent bg-accent text-accent-fg"
-          : "border-border-base text-fg-muted hover:border-border-strong hover:text-fg",
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
-
 export default async function Imoveis({ searchParams }: { searchParams: Params }) {
   const params = await searchParams;
-  const tipo = umValor(params.tipo);
-  const bairro = umValor(params.bairro);
-  const busca = umValor(params.busca);
+
+  const atuais: FiltrosAtivos = {
+    tipo: umValor(params.tipo),
+    bairro: umValor(params.bairro),
+    dormitorios: umValor(params.dormitorios),
+    faixa: umValor(params.faixa),
+    busca: umValor(params.busca),
+    ordenacao: umValor(params.ordenacao),
+  };
+
+  const faixa = FAIXAS_PRECO.find((f) => f.chave === atuais.faixa);
+  const ordenacao = (ORDENACOES.find((o) => o.valor === atuais.ordenacao)?.valor ??
+    "destaque") as Ordenacao;
 
   const [config, facetas, imoveis] = await Promise.all([
     getConfig(),
     getFacetas(),
-    getImoveis({ tipo, bairro, busca }),
+    getImoveis({
+      tipo: atuais.tipo,
+      bairro: atuais.bairro,
+      busca: atuais.busca,
+      dormitorios: atuais.dormitorios ? Number(atuais.dormitorios) : undefined,
+      precoMin: faixa?.min,
+      precoMax: faixa?.max ?? undefined,
+      ordenacao,
+    }),
   ]);
 
   const whatsapp = linkWhatsApp(config.contato);
 
-  const comFiltro = (chave: string, valor?: string) => {
+  const titulo = atuais.busca
+    ? `Resultados para “${atuais.busca}”`
+    : atuais.bairro
+      ? `Imóveis em ${atuais.bairro}`
+      : atuais.tipo
+        ? atuais.tipo
+        : "Imóveis à venda em Santarém";
+
+  const rotulos: Partial<Record<keyof FiltrosAtivos, string>> = {
+    tipo: atuais.tipo,
+    bairro: atuais.bairro,
+    dormitorios: atuais.dormitorios
+      ? `${atuais.dormitorios}${Number(atuais.dormitorios) >= 4 ? "+" : ""} ${
+          atuais.dormitorios === "1" ? "quarto" : "quartos"
+        }`
+      : undefined,
+    faixa: faixa?.rotulo,
+    busca: atuais.busca ? `“${atuais.busca}”` : undefined,
+  };
+
+  /** Mantém os filtros ao trocar a ordem. */
+  const urlOrdenacao = (valor: Ordenacao) => {
     const p = new URLSearchParams();
-    if (tipo && chave !== "tipo") p.set("tipo", tipo);
-    if (bairro && chave !== "bairro") p.set("bairro", bairro);
-    if (busca) p.set("busca", busca);
-    if (valor) p.set(chave, valor);
+    for (const [k, v] of Object.entries(atuais)) {
+      if (v && k !== "ordenacao") p.set(k, v);
+    }
+    if (valor !== "destaque") p.set("ordenacao", valor);
     const q = p.toString();
     return q ? `/imoveis?${q}` : "/imoveis";
   };
 
   return (
     <>
-      <Header whatsapp={whatsapp} />
+      <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
-        <h1 className="font-display text-display-sm lg:text-display-md">
-          {busca
-            ? `Resultados para “${busca}”`
-            : bairro
-              ? `Imóveis em ${bairro}`
-              : tipo
-                ? tipo
-                : "Imóveis à venda em Santarém"}
+        <h1 className="text-balance font-display text-display-sm lg:text-display-md">
+          {titulo}
         </h1>
 
-        <p className="numeros mt-3 text-sm text-fg-muted">
-          {imoveis.length} {imoveis.length === 1 ? "imóvel" : "imóveis"}
-          {imoveis.length !== facetas.total && !busca ? ` de ${facetas.total}` : ""}
-        </p>
+        <div className="mt-10 grid gap-10 lg:grid-cols-[17rem_1fr] lg:gap-12">
+          <Filtros facetas={facetas} atuais={atuais} resultados={imoveis.length} />
 
-        <div className="mt-8 space-y-3">
-          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
-            <Pilula href={comFiltro("tipo")} ativo={!tipo}>
-              Todos os tipos
-            </Pilula>
-            {facetas.tipos.map(({ nome, total }) => (
-              <Pilula key={nome} href={comFiltro("tipo", nome)} ativo={tipo === nome}>
-                {nome} <span className="numeros opacity-60">{total}</span>
-              </Pilula>
-            ))}
-          </div>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border-base pb-5">
+              <p className="numeros text-sm text-fg-muted">
+                {imoveis.length} {imoveis.length === 1 ? "imóvel" : "imóveis"}
+                {imoveis.length !== facetas.total ? ` de ${facetas.total}` : ""}
+              </p>
 
-          <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
-            <Pilula href={comFiltro("bairro")} ativo={!bairro}>
-              Todos os bairros
-            </Pilula>
-            {facetas.bairros.map(({ nome, total }) => (
-              <Pilula
-                key={nome}
-                href={comFiltro("bairro", nome)}
-                ativo={bairro === nome}
-              >
-                <span className="capitalize">{nome}</span>{" "}
-                <span className="numeros opacity-60">{total}</span>
-              </Pilula>
-            ))}
+              <div className="flex flex-wrap gap-1">
+                {ORDENACOES.map((o) => (
+                  <Link
+                    key={o.valor}
+                    href={urlOrdenacao(o.valor)}
+                    scroll={false}
+                    className={
+                      ordenacao === o.valor
+                        ? "rounded-full bg-bg-subtle px-3.5 py-1.5 text-sm text-fg"
+                        : "rounded-full px-3.5 py-1.5 text-sm text-fg-muted transition-colors hover:text-fg"
+                    }
+                  >
+                    {o.rotulo}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <FiltrosAplicados atuais={atuais} rotulos={rotulos} />
+            </div>
+
+            {imoveis.length > 0 ? (
+              <div className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 xl:grid-cols-3">
+                {imoveis.map((imovel, i) => (
+                  <PropertyCard key={imovel.id} imovel={imovel} prioridade={i < 3} />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-12 border-t border-border-base pt-10">
+                <p className="font-display text-2xl">Nada com esse filtro.</p>
+                <p className="mt-3 max-w-[48ch] text-pretty leading-relaxed text-fg-muted">
+                  Tente outro bairro ou faixa de valor. Se procura algo
+                  específico, fale direto com o Amauri — boa parte do estoque de
+                  alto padrão não chega a ser anunciada.
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link
+                    href="/imoveis"
+                    className="rounded-full border border-border-strong px-5 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent"
+                  >
+                    Limpar filtros
+                  </Link>
+                  <a
+                    href={whatsapp}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-accent px-5 py-2.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover"
+                  >
+                    Falar com Amauri
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {imoveis.length > 0 ? (
-          <div className="mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {imoveis.map((imovel, i) => (
-              <PropertyCard key={imovel.id} imovel={imovel} prioridade={i < 3} />
-            ))}
-          </div>
-        ) : (
-          <div className="mt-16 border-t border-border-base pt-10">
-            <p className="font-display text-2xl">Nada encontrado com esse filtro.</p>
-            <p className="mt-3 max-w-[48ch] text-pretty leading-relaxed text-fg-muted">
-              Tente outro bairro ou tipo de imóvel. Se procura algo específico,
-              fale direto com o Amauri — boa parte do estoque de alto padrão não
-              chega a ser anunciado.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/imoveis"
-                className="rounded-full border border-border-strong px-5 py-2.5 text-sm transition-colors hover:border-accent hover:text-accent"
-              >
-                Limpar filtros
-              </Link>
-              <a
-                href={whatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-full bg-accent px-5 py-2.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover"
-              >
-                Falar com Amauri
-              </a>
-            </div>
-          </div>
-        )}
       </main>
 
       <Footer
