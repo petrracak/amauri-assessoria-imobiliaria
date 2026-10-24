@@ -8,6 +8,7 @@ export type Perfil = {
   email: string | null;
   role: "admin" | "corretor";
   ativo: boolean;
+  avatar_url: string | null;
 };
 
 /**
@@ -25,7 +26,7 @@ export async function exigirPerfil(): Promise<Perfil> {
 
   const { data: perfil } = await supabase
     .from("profiles")
-    .select("id, nome, email, role, ativo")
+    .select("id, nome, email, role, ativo, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 

@@ -20,6 +20,11 @@ export default function imageLoader({
 }) {
   // Arquivos locais (logo, ícones) já vêm no tamanho certo.
   if (!src.includes("/storage/v1/object/public/")) return src;
+
+  // Só as fotos de imóvel têm os dois tamanhos. Avatar e capa de blog são
+  // arquivo único: pedir a variante pequena deles daria 404.
+  if (!src.includes("/storage/v1/object/public/imoveis/")) return src;
+
   if (!src.endsWith(".webp")) return src;
   if (src.endsWith("-sm.webp")) return src;
 

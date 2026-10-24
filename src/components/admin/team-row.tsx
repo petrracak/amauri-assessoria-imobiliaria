@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { alterarPapel, alterarSituacao, definirSenhaDe } from "@/app/actions/equipe";
+import { Avatar } from "@/components/admin/avatar";
 import { cn } from "@/lib/utils";
 
 export type Membro = {
@@ -14,6 +15,7 @@ export type Membro = {
   usuario: string | null;
   role: "admin" | "corretor";
   ativo: boolean;
+  avatar_url: string | null;
 };
 
 export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
@@ -36,6 +38,8 @@ export function TeamRow({ membro, euSou }: { membro: Membro; euSou: string }) {
   return (
     <li className="py-5">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        <Avatar url={membro.avatar_url} nome={membro.nome} />
+
         <div className="min-w-0 flex-1">
           <p className="truncate text-[0.9375rem]">
             {membro.nome}

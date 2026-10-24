@@ -13,7 +13,7 @@ export default async function Equipe() {
   const supabase = await createClient();
   const { data: membros } = await supabase
     .from("profiles")
-    .select("id, nome, email, usuario, role, ativo")
+    .select("id, nome, email, usuario, role, ativo, avatar_url")
     .order("role")
     .order("nome");
 

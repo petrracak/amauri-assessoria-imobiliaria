@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AdminNav } from "@/components/admin/admin-nav";
+import { Avatar } from "@/components/admin/avatar";
 import { Logo } from "@/components/site/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { sair } from "@/app/actions/auth";
@@ -39,9 +40,10 @@ export default async function AdminLayout({
           <div className="flex items-center gap-3">
             <Link
               href="/admin/conta"
-              className="hidden text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline sm:inline"
+              className="flex items-center gap-2.5 text-sm text-fg-muted transition-colors hover:text-fg"
             >
-              {perfil.nome}
+              <Avatar url={perfil.avatar_url} nome={perfil.nome} tamanho="sm" />
+              <span className="hidden sm:inline">{perfil.nome}</span>
             </Link>
             <ThemeToggle />
             <form action={sair}>
