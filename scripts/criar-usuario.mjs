@@ -108,5 +108,33 @@ if (!perfil.ok) {
   process.exit(1);
 }
 
-console.log(`Pronto: ${nome} <${email}> com acesso de ${role}.`);
-console.log("Entre em /admin/login e peça o link de acesso por e-mail.");
+// 3. Link de primeiro acesso.
+//
+// O envio de e-mail do Supabase está no serviço padrão, limitado a poucas
+// mensagens por hora, então o link é impresso aqui para ser mandado por
+// WhatsApp. Quem recebe entra, vai em "Conta" e define uma senha — depois
+// disso não depende mais de link nenhum.
+const site = (env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+
+const linkResp = await fetch(`${base}/auth/v1/admin/generate_link`, {
+  method: "POST",
+  headers: cabecalhos,
+  body: JSON.stringify({ type: "magiclink", email }),
+});
+
+const dadosLink = await json(linkResp);
+const tokenHash =
+  dadosLink?.hashed_token ?? dadosLink?.properties?.hashed_token ?? null;
+
+console.log(`\nPronto: ${nome} <${email}> com acesso de ${role}.\n`);
+
+if (tokenHash) {
+  console.log("Link de primeiro acesso (vale 1 hora, uso único):\n");
+  console.log(
+    `  ${site}/auth/confirm?token_hash=${tokenHash}&type=magiclink&next=/admin/conta\n`,
+  );
+  console.log("Mande por WhatsApp. Ao abrir, a pessoa já cai na tela de definir senha.");
+} else {
+  console.log("Não deu para gerar o link de primeiro acesso.");
+  console.log("A pessoa pode pedir um link em /admin/login, se o e-mail estiver funcionando.");
+}

@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   Newspaper,
   Settings,
+  UserCircle,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +22,7 @@ const ITENS: Item[] = [
   { href: "/admin/posts", label: "Blog", icone: Newspaper },
   { href: "/admin/leads", label: "Leads", icone: Users },
   { href: "/admin/configuracoes", label: "Configurações", icone: Settings, somenteAdmin: true },
+  { href: "/admin/conta", label: "Conta", icone: UserCircle },
 ];
 
 export function AdminNav({ role }: { role: "admin" | "corretor" }) {

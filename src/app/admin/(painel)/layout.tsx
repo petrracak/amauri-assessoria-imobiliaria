@@ -37,9 +37,12 @@ export default async function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-fg-muted sm:inline">
+            <Link
+              href="/admin/conta"
+              className="hidden text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline sm:inline"
+            >
               {perfil.nome}
-            </span>
+            </Link>
             <ThemeToggle />
             <form action={sair}>
               <button
