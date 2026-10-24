@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { exigirPerfil } from "@/lib/auth";
+import { exigirAdmin, exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 function slugify(texto: string) {
@@ -134,7 +134,8 @@ export async function salvarPost(
 }
 
 export async function apagarPost(id: string) {
-  await exigirPerfil();
+  // Mesma regra do imóvel: esconder o botão não autoriza nada.
+  await exigirAdmin();
   const supabase = await createClient();
 
   const { data: post } = await supabase

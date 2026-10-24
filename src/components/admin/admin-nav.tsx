@@ -8,6 +8,7 @@ import {
   Settings,
   UserCircle,
   Users,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,6 +22,7 @@ const ITENS: Item[] = [
   { href: "/admin/imoveis", label: "Imóveis", icone: Building2 },
   { href: "/admin/posts", label: "Blog", icone: Newspaper },
   { href: "/admin/leads", label: "Leads", icone: Users },
+  { href: "/admin/equipe", label: "Equipe", icone: UsersRound, somenteAdmin: true },
   { href: "/admin/configuracoes", label: "Configurações", icone: Settings, somenteAdmin: true },
   { href: "/admin/conta", label: "Conta", icone: UserCircle },
 ];

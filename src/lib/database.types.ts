@@ -171,6 +171,7 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           telefone: string | null
           updated_at: string
+          usuario: string | null
         }
         Insert: {
           ativo?: boolean
@@ -183,6 +184,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           telefone?: string | null
           updated_at?: string
+          usuario?: string | null
         }
         Update: {
           ativo?: boolean
@@ -195,6 +197,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           telefone?: string | null
           updated_at?: string
+          usuario?: string | null
         }
         Relationships: []
       }

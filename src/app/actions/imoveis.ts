@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { exigirPerfil } from "@/lib/auth";
+import { exigirAdmin, exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 /** "Casa no Cidade Jardim" -> "casa-no-cidade-jardim" */
@@ -162,7 +162,9 @@ export async function alterarStatus(id: string, status: "rascunho" | "publicado"
 }
 
 export async function apagarImovel(id: string) {
-  await exigirPerfil();
+  // Só admin apaga. A interface já escondia o botão, mas esconder não é
+  // autorizar: a ação é chamável direto por quem souber o endereço.
+  await exigirAdmin();
   const supabase = await createClient();
 
   // Tira os arquivos do storage antes da linha sumir com o cascade.

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { Logo } from "@/components/site/logo";
+import { loginParaEmail } from "@/lib/equipe";
 import { createClient } from "@/lib/supabase/client";
 
 const MENSAGENS: Record<string, string> = {
@@ -41,7 +42,8 @@ function Formulario() {
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      // Aceita nome ou e-mail: quem entra por nome tem o endereço derivado.
+      email: loginParaEmail(email),
       password: senha,
     });
 
@@ -49,7 +51,7 @@ function Formulario() {
       setOcupado(false);
       setErro(
         /invalid login credentials/i.test(error.message)
-          ? "E-mail ou senha não conferem."
+          ? "Usuário ou senha não conferem."
           : "Não deu para entrar agora. Tente de novo em instantes.",
       );
       return;
@@ -115,22 +117,23 @@ function Formulario() {
       <h1 className="font-display text-display-sm">Entrar no painel</h1>
       <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
         {modo === "senha"
-          ? "Use o e-mail e a senha do seu acesso."
+          ? "Use seu nome de acesso, ou o e-mail, com a sua senha."
           : "Informe seu e-mail e enviamos um link de acesso."}
       </p>
 
       <label htmlFor="email" className="mt-10 block text-sm text-fg-muted">
-        E-mail
+        {modo === "senha" ? "Nome ou e-mail" : "E-mail"}
       </label>
       <input
         id="email"
-        type="email"
+        // Em modo senha aceita nome, então não force validação de e-mail.
+        type={modo === "senha" ? "text" : "email"}
         required
-        autoComplete="email"
+        autoComplete={modo === "senha" ? "username" : "email"}
         autoFocus
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="nome@exemplo.com"
+        placeholder={modo === "senha" ? "josue.ferreira" : "nome@exemplo.com"}
         className={entrada}
       />
 
