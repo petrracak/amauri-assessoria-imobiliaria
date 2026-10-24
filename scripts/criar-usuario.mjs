@@ -21,7 +21,8 @@ function carregarEnv(caminho = ".env.local") {
   return env;
 }
 
-const [email, nome, role = "corretor"] = process.argv.slice(2);
+const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const [email, nome, role = "corretor"] = args;
 
 if (!email || !nome) {
   console.error('Uso: node scripts/criar-usuario.mjs email@exemplo.com "Nome" [admin|corretor]');
@@ -114,7 +115,14 @@ if (!perfil.ok) {
 // mensagens por hora, então o link é impresso aqui para ser mandado por
 // WhatsApp. Quem recebe entra, vai em "Conta" e define uma senha — depois
 // disso não depende mais de link nenhum.
-const site = (env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+// .env.local aponta para localhost, que é o certo para desenvolver — mas o
+// link vai para outra pessoa. Use --site=<url> para gerar o de produção.
+const flagSite = process.argv.find((a) => a.startsWith("--site="));
+const site = (
+  flagSite?.slice("--site=".length) ??
+  env.NEXT_PUBLIC_SITE_URL ??
+  "http://localhost:3000"
+).replace(/\/$/, "");
 
 const linkResp = await fetch(`${base}/auth/v1/admin/generate_link`, {
   method: "POST",
