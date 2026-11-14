@@ -12,6 +12,7 @@ import {
   Campo,
   Cartao,
   Segmentos,
+  Seta,
   botao,
   campo,
 } from "@/components/admin/ui";
@@ -37,6 +38,7 @@ function Salvar({ novo }: { novo: boolean }) {
   return (
     <button type="submit" disabled={pending} className={cn(botao.primario, "flex-1 sm:flex-none")}>
       {pending ? "Salvando…" : novo ? "Criar texto" : "Salvar alterações"}
+      {pending ? null : <Seta />}
     </button>
   );
 }

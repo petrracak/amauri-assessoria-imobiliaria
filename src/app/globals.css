@@ -25,11 +25,17 @@
   --color-brand-900: #1d3758;
   --color-brand-950: #121f33;
 
+  /* Uma família só, no site e no painel. Títulos e interface se separam
+     pelo tamanho e pelo espaçamento, não por famílias diferentes. */
   --font-sans: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
-  /* Painel (Archivo, carregada só em /admin). */
-  --font-display: var(--font-display-base), ui-sans-serif, system-ui, sans-serif;
-  /* Títulos do site público. */
-  --font-titulo: var(--font-titulo-base), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
+  --font-titulo: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
+  /* Palavras de destaque dentro do título: serifada itálica. */
+  --font-destaque: var(--font-destaque-base), Georgia, serif;
+
+  /* Gelo: o claro dos títulos sobre tinta. Prata: onde o gradiente termina. */
+  --color-gelo: #eef3f9;
+  --color-prata: #8c9cb4;
 
   /* Curvas: entrada suave, sem "mola" — o site é sóbrio, não saltitante. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -62,6 +68,8 @@
   --accent-hover: var(--color-brand-600);
   --accent-fg: #ffffff;
   --ring: var(--color-brand-600);
+  --grad-de: #101723;
+  --grad-ate: #5c6b84;
   --shadow-card: 0 1px 2px rgb(16 23 35 / 0.04), 0 8px 24px rgb(16 23 35 / 0.06);
   --overlay: rgb(16 23 35 / 0.55);
 }
@@ -80,6 +88,8 @@
   --accent-hover: #86bcf2;
   --accent-fg: #0b1220;
   --ring: #5da0e8;
+  --grad-de: #ffffff;
+  --grad-ate: #8c9cb4;
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.35);
   --overlay: rgb(5 9 16 / 0.7);
 }
@@ -140,19 +150,75 @@
 }
 
 @layer base {
-  /* Painel: títulos expandidos. O eixo de largura da Archivo dá porte sem
-     distorcer a letra. */
+  /* Painel: mesmo aperto do site, um ponto menos de peso — a interface é
+     lida o dia inteiro e pede menos contraste que uma capa. */
   .font-display {
-    font-stretch: 112%;
-    letter-spacing: -0.02em;
     font-weight: 600;
+    letter-spacing: -0.03em;
   }
 
-  /* Site público. Peso de texto, não de cartaz: a serifada fica melhor
-     regular, com entrelinha curta e espaçamento levemente fechado. */
+  /* Site público: grotesca grande e apertada. O espaçamento negativo é o
+     que dá o bloco compacto de título de revista; sem ele a mesma fonte
+     parece parágrafo grande. */
   .font-titulo {
+    font-weight: 600;
+    letter-spacing: -0.035em;
+  }
+
+  /* A palavra (ou duas) que carrega a ideia do título. A serifada itálica
+     tem olho menor que a grotesca, então sobe um pouco de tamanho para as
+     duas parecerem da mesma altura. */
+  .destaque {
+    font-family: var(--font-destaque);
+    /* A palavra de destaque nunca se parte entre duas linhas: quebrada,
+       vira duas palavras em itálico sem razão aparente. */
+    white-space: nowrap;
     font-weight: 400;
-    letter-spacing: -0.018em;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    font-size: 1.08em;
+    padding-right: 0.04em;
+  }
+
+  /* Gradiente gelo → prata. Fundo recortado pelo texto: o degradê corre no
+     bloco inteiro, então a última linha do título chega mais escura — é o
+     que dá a profundidade. */
+  .texto-gelo {
+    background-image: linear-gradient(
+      175deg,
+      #ffffff 0%,
+      var(--color-gelo) 30%,
+      var(--color-prata) 98%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    /* Sem isto, descendentes de "g" e "p" entram no recorte e somem. */
+    padding-bottom: 0.08em;
+  }
+
+  /* Para páginas que trocam de tema: as duas pontas do degradê são tokens,
+     então o mesmo título funciona no claro e no escuro. */
+  .texto-grad {
+    background-image: linear-gradient(
+      175deg,
+      var(--grad-de) 0%,
+      var(--grad-de) 40%,
+      var(--grad-ate) 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    padding-bottom: 0.08em;
+  }
+
+  /* Mesmo gradiente, para título sobre fundo claro. */
+  .texto-tinta {
+    background-image: linear-gradient(175deg, #101723 0%, #101723 42%, #5c6b84 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    padding-bottom: 0.08em;
   }
 }
 
@@ -264,6 +330,22 @@ html[data-intro="visto"] .login-entra:nth-child(3) {
   .fundo-login i,
   .login-entra {
     animation: none;
+  }
+}
+
+/* Um brilho que corre dentro da linha da dica de rolagem, sempre contido
+   nos 40px dela: cresce para fora invadiria o texto ao lado. */
+.linha-corre {
+  animation: linha-corre 2.4s var(--ease-in-out-soft) infinite;
+}
+
+@keyframes linha-corre {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(200%);
   }
 }
 

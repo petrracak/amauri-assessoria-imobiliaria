@@ -124,7 +124,7 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
       <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
-        <h1 className="text-balance font-titulo text-display-sm lg:text-display-md">
+        <h1 className="texto-grad text-balance font-titulo text-display-sm lg:text-display-md">
           {titulo}
         </h1>
 

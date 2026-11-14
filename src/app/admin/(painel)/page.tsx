@@ -120,7 +120,11 @@ export default async function Painel() {
   return (
     <Pagina>
       <Cabecalho
-        titulo={`${saudacao()}, ${primeiroNome}`}
+        titulo={
+          <>
+            {saudacao()}, <span className="destaque">{primeiroNome}</span>
+          </>
+        }
         descricao="O que está no ar e quem está esperando resposta."
       />
 

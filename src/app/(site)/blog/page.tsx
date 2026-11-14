@@ -95,7 +95,7 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
 
       <main className="container-site py-12 lg:py-16">
         <Revela>
-          <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
+          <h1 className="texto-grad max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
             Antes de comprar, vale entender
           </h1>
           <p className="mt-4 max-w-[52ch] text-pretty leading-relaxed text-fg-muted">

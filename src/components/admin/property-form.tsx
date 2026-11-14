@@ -10,6 +10,7 @@ import {
   Cartao,
   Interruptor,
   Segmentos,
+  Seta,
   botao,
   campo,
 } from "@/components/admin/ui";
@@ -63,6 +64,7 @@ function Salvar({ novo, pendente, enviando }: { novo: boolean; pendente: boolean
   return (
     <button type="submit" disabled={pendente} className={cn(botao.primario, "flex-1 sm:flex-none")}>
       {enviando ? "Enviando fotos…" : pendente ? "Salvando…" : novo ? "Cadastrar imóvel" : "Salvar alterações"}
+      {pendente || enviando ? null : <Seta />}
     </button>
   );
 }

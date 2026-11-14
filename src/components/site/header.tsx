@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import { Logo } from "@/components/site/logo";
 import { MegaMenu } from "@/components/site/mega-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { Facetas } from "@/lib/queries";
+import { Botao } from "@/components/site/botao";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -144,19 +145,15 @@ export function Header({
           <LinkFavoritos claro={transparente} />
           <ThemeToggle claro={transparente} />
 
-          <a
+          <Botao
             href={whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              "hidden rounded-full px-5 py-2.5 text-sm font-medium transition-colors sm:inline-block",
-              transparente
-                ? "bg-white text-brand-950 hover:bg-white/90"
-                : "bg-accent text-accent-fg hover:bg-accent-hover",
-            )}
+            externo
+            tamanho="compacto"
+            variante={transparente ? "gelo" : "tinta"}
+            className="max-sm:hidden"
           >
             Falar com Amauri
-          </a>
+          </Botao>
 
           <button
             type="button"
@@ -234,9 +231,10 @@ export function Header({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setAberto(false)}
-            className="mt-8 rounded-full bg-accent px-6 py-4 text-center text-accent-fg"
+            className="mt-8 inline-flex min-h-14 items-center justify-between gap-4 rounded-full bg-[linear-gradient(135deg,#2b6fae_0%,#1d538d_42%,#15314f_100%)] px-6 text-sm font-medium uppercase tracking-[0.12em] text-white"
           >
             Falar com Amauri
+            <ArrowRight className="size-5" strokeWidth={2} aria-hidden />
           </a>
         </nav>
       </div>

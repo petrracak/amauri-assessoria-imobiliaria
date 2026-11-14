@@ -28,8 +28,8 @@ export default async function Sobre() {
       <main>
         <section className="container-site py-16 lg:py-24">
           <Revela>
-            <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
-              Assessoria imobiliária em Santarém
+            <h1 className="texto-grad max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
+              <span className="destaque">Assessoria</span> imobiliária em Santarém
             </h1>
           </Revela>
 

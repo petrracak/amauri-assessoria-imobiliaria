@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Hanken_Grotesk, Newsreader } from "next/font/google";
+import { Geist, Instrument_Serif } from "next/font/google";
 import Script from "next/script";
 
 import { ServiceWorker } from "@/components/service-worker";
@@ -9,28 +9,26 @@ import { ehEnderecoTemporario, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 /**
- * Corpo e interface: grotesca humanista, de traço aberto e boa leitura em
- * tela pequena. Troca da DM Sans, que é a fonte de corpo de metade dos
- * sites feitos por gerador.
+ * Uma família para tudo: grotesca contemporânea, de traço fechado e formas
+ * neutras. Nos títulos ela é usada grande e com espaçamento apertado — é
+ * assim que ela ganha porte — e na interface, no tamanho normal.
  */
-const hanken = Hanken_Grotesk({
+const geist = Geist({
   subsets: ["latin"],
   variable: "--font-sans-base",
   display: "swap",
 });
 
 /**
- * Títulos do site: serifada de jornal, desenhada para leitura em tela. Dá ao
- * site o tom de revista de arquitetura, que combina com imóvel de alto
- * padrão, e sai do padrão de títulos em sans expandida.
- *
- * Um peso só, estático: a versão variável com eixo de tamanho óptico pesava
- * 129 KB; esta pesa cerca de um quarto disso e carrega antes do título.
+ * A assinatura da casa: uma serifada de contraste alto, em itálico, usada só
+ * nas duas ou três palavras que carregam a ideia do título. É o que tira o
+ * título do lugar-comum sem precisar de enfeite.
  */
-const newsreader = Newsreader({
+const instrument = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
-  variable: "--font-titulo-base",
+  style: "italic",
+  variable: "--font-destaque-base",
   display: "swap",
 });
 
@@ -77,7 +75,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${hanken.variable} ${newsreader.variable}`}
+      className={`${geist.variable} ${instrument.variable}`}
     >
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

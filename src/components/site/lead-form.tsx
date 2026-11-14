@@ -4,19 +4,16 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { cadastrarLead, type EstadoLead } from "@/app/actions/leads";
+import { Botao as BotaoCasa } from "@/components/site/botao";
 
 const INICIAL: EstadoLead = { ok: false };
 
 function Botao() {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="rounded-full bg-accent px-7 py-3.5 text-sm text-accent-fg transition-colors hover:bg-accent-hover disabled:opacity-60"
-    >
+    <BotaoCasa type="submit" variante="tinta" disabled={pending}>
       {pending ? "Cadastrando…" : "Quero receber"}
-    </button>
+    </BotaoCasa>
   );
 }
 

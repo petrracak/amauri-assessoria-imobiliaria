@@ -1,7 +1,8 @@
-import { Search } from "lucide-react";
+
 import Image from "next/image";
 import Link from "next/link";
 
+import { Botao, LinkSeta } from "@/components/site/botao";
 import { Footer } from "@/components/site/footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
@@ -91,6 +92,14 @@ export default async function Home() {
             </picture>
           )}
 
+          {/* Brilho frio atrás do texto, vindo de baixo à esquerda. Faz o
+              papel do halo quente da referência, na cor da marca: separa o
+              bloco de texto da foto sem precisar de caixa nem de borda. */}
+          <div
+            className="pointer-events-none absolute -bottom-40 -left-40 -z-10 size-[42rem] rounded-full bg-[radial-gradient(circle,rgba(45,127,201,0.3)_0%,rgba(45,127,201,0.08)_45%,transparent_70%)] blur-2xl"
+            aria-hidden
+          />
+
           {/* O banner já nasce escuro à esquerda; o véu só firma a leitura
               do texto sobre ele, sem apagar a foto. */}
           <div
@@ -99,18 +108,25 @@ export default async function Home() {
           />
 
           <div className="container-site pb-16 pt-36 lg:pb-24 lg:pt-56">
-            <h1 className="hero-item max-w-[16ch] text-balance font-titulo text-display-md text-white lg:text-display-xl">
-              Imóveis de alto padrão em Santarém
+            {/* O rótulo acima do título: caixa alta espaçada, mas com o
+                gradiente correndo na horizontal — é o que o tira de
+                "etiqueta padrão" e o liga ao título. */}
+            <p className="hero-item bg-[linear-gradient(90deg,#ffffff_0%,#cddcef_55%,var(--color-brand-400)_100%)] bg-clip-text text-[0.6875rem] font-medium uppercase tracking-[0.2em] text-transparent">
+              Santarém · Pará · CRECI {config.contato.creci}
+            </p>
+
+            <h1 className="hero-item texto-gelo mt-6 max-w-[17ch] text-balance font-titulo text-display-md lg:text-display-lg 2xl:text-display-xl">
+              Imóveis de <span className="destaque">alto padrão</span> em Santarém
             </h1>
 
-            <p className="hero-item mt-6 max-w-[46ch] text-pretty leading-relaxed text-white/75 lg:text-lg">
+            <p className="hero-item mt-6 max-w-[44ch] text-pretty leading-relaxed text-white/70 lg:text-lg">
               {config.hero.subtitulo}
             </p>
 
             {/* Um campo só. O catálogo é que tem filtro, não a capa. */}
             <form
               action="/imoveis"
-              className="hero-item mt-10 flex max-w-xl items-center gap-3 border-b border-white/35 pb-3"
+              className="hero-item mt-10 flex max-w-xl items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] p-2 pl-6 backdrop-blur-xl transition-colors focus-within:border-white/35"
             >
               <label htmlFor="busca-hero" className="sr-only">
                 Buscar imóvel por bairro, tipo ou referência
@@ -119,21 +135,17 @@ export default async function Home() {
                 id="busca-hero"
                 name="busca"
                 placeholder="Bairro, tipo ou referência"
-                className="w-full min-w-0 bg-transparent py-1.5 text-[0.9375rem] text-white placeholder:text-white/55 focus:outline-none"
+                className="w-full min-w-0 bg-transparent text-[0.9375rem] text-white placeholder:text-white/50 focus:outline-none"
               />
-              <button
-                type="submit"
-                className="flex shrink-0 items-center gap-2 rounded-full bg-white px-4 py-2 text-sm text-brand-950 transition-colors hover:bg-white/90 sm:px-5"
-              >
-                <Search className="size-4" strokeWidth={1.75} />
-                <span className="sr-only sm:not-sr-only">Buscar</span>
-              </button>
+              <Botao type="submit" className="max-sm:!gap-0 max-sm:!pl-1.5">
+                <span className="max-sm:sr-only">Buscar</span>
+              </Botao>
             </form>
 
-            {/* Frase inteira em caixa alta com espaçamento largo fica difícil
-                de ler; em caixa normal ela convida em vez de gritar. */}
-            <div className="hero-item mt-14 hidden items-center gap-3 text-sm text-white/60 lg:flex">
-              <span className="h-px w-10 bg-white/45" aria-hidden />
+            <div className="hero-item mt-14 hidden items-center gap-3 text-sm text-white/55 lg:flex">
+              <span aria-hidden className="relative h-px w-10 overflow-hidden bg-white/15">
+                <span className="linha-corre absolute inset-y-0 left-0 w-1/2 bg-white/80" />
+              </span>
               Role para baixo e encontre o seu novo imóvel
             </div>
           </div>
@@ -143,15 +155,10 @@ export default async function Home() {
         <section className="container-site py-20 lg:py-28">
           <Revela>
             <div className="flex flex-wrap items-end justify-between gap-5">
-              <h2 className="max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-md">
-                Imóveis disponíveis agora
+              <h2 className="texto-tinta max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-md">
+                Imóveis <span className="destaque">disponíveis</span> agora
               </h2>
-              <Link
-                href="/imoveis"
-                className="text-sm text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent"
-              >
-                Ver os {facetas.total} imóveis
-              </Link>
+              <LinkSeta href="/imoveis">Ver os {facetas.total} imóveis</LinkSeta>
             </div>
           </Revela>
 
@@ -167,9 +174,9 @@ export default async function Home() {
                 href="/imoveis"
                 className="campo-tinta group col-span-6 flex flex-col justify-between p-7 transition-opacity hover:opacity-95 sm:col-span-3 lg:col-span-2"
               >
-                <p className="text-balance font-titulo text-[1.75rem] leading-[1.2]">
+                <p className="texto-gelo text-balance font-titulo text-[1.75rem] leading-[1.2]">
                   {facetas.total} imóveis em {facetas.bairros.length} bairros de
-                  Santarém, a partir de{" "}
+                  Santarém, <span className="destaque">a partir de</span>{" "}
                   <span className="numeros">{formatPreco(menorPreco)}</span>.
                 </p>
 
@@ -198,8 +205,8 @@ export default async function Home() {
         <section className="border-y border-border-base bg-bg-subtle">
           <div className="container-site grid gap-12 py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
             <Revela>
-              <h2 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-md">
-                Amauri Nobre, corretor em Santarém
+              <h2 className="texto-tinta max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-md">
+                Amauri Nobre, <span className="destaque">corretor</span> em Santarém
               </h2>
               <div className="mt-6 max-w-[48ch] space-y-4 text-pretty leading-relaxed text-fg-muted">
                 <p>
@@ -218,12 +225,9 @@ export default async function Home() {
                 CRECI {config.contato.creci}
               </p>
 
-              <Link
-                href="/sobre"
-                className="mt-6 inline-block text-sm text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent"
-              >
+              <LinkSeta href="/sobre" className="mt-5">
                 Conhecer a assessoria
-              </Link>
+              </LinkSeta>
             </Revela>
 
             <Revela atraso={120} className="relative flex items-end justify-center lg:justify-end">
@@ -244,8 +248,8 @@ export default async function Home() {
           <div className="container-site py-20 lg:py-28">
             <div className="grid gap-12 lg:grid-cols-[22rem_1fr] lg:gap-20">
               <Revela>
-                <h2 className="text-balance font-titulo text-display-sm lg:text-display-md">
-                  Santarém, bairro por bairro
+                <h2 className="texto-gelo text-balance font-titulo text-display-sm lg:text-display-md">
+                  Santarém, <span className="destaque">bairro por bairro</span>
                 </h2>
                 <p className="mt-5 max-w-[40ch] text-pretty leading-relaxed text-fg-muted">
                   Escolha a região e veja o que está disponível agora.
@@ -274,8 +278,8 @@ export default async function Home() {
         {/* -------------------------------------------------------- captura */}
         <section className="container-site py-20 lg:py-28">
           <Revela className="max-w-2xl">
-            <h2 className="text-balance font-titulo text-display-sm lg:text-display-md">
-              Receba os imóveis novos antes de todo mundo
+            <h2 className="texto-tinta max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-md">
+              Receba os imóveis novos <span className="destaque">antes de todo mundo</span>
             </h2>
             <p className="mt-5 text-pretty leading-relaxed text-fg-muted">
               Deixe seu WhatsApp e avisamos quando entrar um imóvel com o perfil

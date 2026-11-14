@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
 
 import { Intro } from "@/components/site/intro";
 
@@ -9,18 +8,6 @@ import { Intro } from "@/components/site/intro";
  * se morasse lá, quem instalasse a partir do login ganharia o app do site
  * público, que abre em "/", e não o do painel.
  */
-/**
- * Títulos do painel: grotesca com eixo de largura, usada expandida. O site
- * público usa outra família; carregar esta só aqui tira 88 KB das páginas
- * que o visitante abre.
- */
-const archivo = Archivo({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-display-base",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: { default: "Painel", template: "%s | Painel Amauri" },
   robots: { index: false, follow: false },
@@ -44,7 +31,7 @@ export const viewport: Viewport = {
 
 export default function AdminRaiz({ children }: { children: React.ReactNode }) {
   return (
-    <div className={archivo.variable}>
+    <div>
       {/* Mesma cortina do site, e a mesma chave de sessão: quem já a viu
           navegando no site não a vê de novo ao abrir o painel na mesma aba.
           Como app instalado, cada abertura é uma sessão nova e ela aparece. */}

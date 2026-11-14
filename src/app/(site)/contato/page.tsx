@@ -26,8 +26,8 @@ export default async function Contato() {
 
       <main className="container-site py-16 lg:py-24">
         <Revela>
-          <h1 className="max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-lg">
-            Fale com a assessoria
+          <h1 className="texto-grad max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-lg">
+            Fale com a <span className="destaque">assessoria</span>
           </h1>
         </Revela>
 

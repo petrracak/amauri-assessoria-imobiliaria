@@ -1,4 +1,4 @@
-import { ChevronLeft } from "lucide-react";
+import { ArrowRight, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -19,10 +19,16 @@ export const campo =
   "mt-1.5 block min-h-12 w-full min-w-0 rounded-xl border border-border-strong bg-bg-elevated px-4 py-3 text-base text-fg transition-colors placeholder:text-fg-subtle focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25 disabled:opacity-60 lg:text-[0.9375rem]";
 
 const botaoBase =
-  "inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full px-6 text-[0.9375rem] font-medium transition-[background-color,border-color,color,transform] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60";
+  "group/btn inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full px-6 text-[0.9375rem] font-medium transition-[background-color,border-color,color,transform,box-shadow,background-position] duration-300 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60";
 
 export const botao = {
-  primario: cn(botaoBase, "bg-accent text-accent-fg hover:bg-accent-hover"),
+  /* O mesmo metal azul do site, com a luz vindo de cima. */
+  primario: cn(
+    botaoBase,
+    "bg-[linear-gradient(135deg,#2b6fae_0%,#1d538d_45%,#15314f_100%)] bg-[length:200%_100%] bg-[position:0%_0%] text-white",
+    "shadow-[0_1px_0_rgba(255,255,255,0.22)_inset,0_8px_22px_-10px_rgba(16,72,120,0.65)]",
+    "hover:bg-[position:100%_0%] hover:shadow-[0_1px_0_rgba(255,255,255,0.22)_inset,0_12px_30px_-10px_rgba(16,72,120,0.8)]",
+  ),
   secundario: cn(
     botaoBase,
     "border border-border-strong bg-bg-elevated text-fg hover:border-accent hover:text-accent",
@@ -141,6 +147,25 @@ export function Pagina({
   return <div className={cn("mx-auto w-full min-w-0 space-y-6", largura)}>{children}</div>;
 }
 
+/** Seta que corre, para a ação principal de uma tela. */
+export function Seta({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn("relative grid size-[1.15rem] place-items-center overflow-hidden", className)}
+    >
+      <ArrowRight
+        className="size-[1.15rem] transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover/btn:translate-x-6 motion-reduce:transition-none motion-reduce:group-hover/btn:translate-x-0"
+        strokeWidth={2}
+      />
+      <ArrowRight
+        className="absolute size-[1.15rem] -translate-x-6 transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover/btn:translate-x-0 motion-reduce:hidden"
+        strokeWidth={2}
+      />
+    </span>
+  );
+}
+
 export function Cabecalho({
   titulo,
   descricao,
@@ -166,7 +191,7 @@ export function Cabecalho({
 
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
         <div className="min-w-0 flex-1 basis-60">
-          <h1 className="text-balance font-display text-[1.625rem] leading-tight lg:text-[1.875rem]">
+          <h1 className="texto-grad text-balance font-display text-[1.625rem] leading-tight lg:text-[1.875rem]">
             {titulo}
           </h1>
           {descricao ? (
