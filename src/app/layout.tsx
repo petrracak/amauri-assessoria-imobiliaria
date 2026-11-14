@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, DM_Sans } from "next/font/google";
+import { Hanken_Grotesk, Newsreader } from "next/font/google";
 import Script from "next/script";
 
 import { ServiceWorker } from "@/components/service-worker";
@@ -8,25 +8,31 @@ import { ehEnderecoTemporario, siteUrl } from "@/lib/site";
 
 import "./globals.css";
 
-/** Corpo e interface: desenhada para ritmo de leitura em tela. */
-const dmSans = DM_Sans({
+/**
+ * Corpo e interface: grotesca humanista, de traço aberto e boa leitura em
+ * tela pequena. Troca da DM Sans, que é a fonte de corpo de metade dos
+ * sites feitos por gerador.
+ */
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   variable: "--font-sans-base",
   display: "swap",
 });
 
 /**
- * Títulos: grotesca com eixo de largura. Usada expandida, ela tem porte
- * arquitetônico — vocabulário de incorporadora, não de blog.
+ * Títulos do site: serifada de jornal, desenhada para leitura em tela. Dá ao
+ * site o tom de revista de arquitetura, que combina com imóvel de alto
+ * padrão, e sai do padrão de títulos em sans expandida.
+ *
+ * Um peso só, estático: a versão variável com eixo de tamanho óptico pesava
+ * 129 KB; esta pesa cerca de um quarto disso e carrega antes do título.
  */
-const archivo = Archivo({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-display-base",
+  weight: "400",
+  variable: "--font-titulo-base",
   display: "swap",
 });
-
-
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -71,7 +77,7 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${archivo.variable}`}
+      className={`${hanken.variable} ${newsreader.variable}`}
     >
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>

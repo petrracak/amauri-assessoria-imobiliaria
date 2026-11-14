@@ -4,15 +4,17 @@ import { Footer } from "@/components/site/footer";
 import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
+import { metaPagina } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Contato",
-  description:
+export const metadata: Metadata = metaPagina({
+  titulo: "Contato",
+  descricao:
     "Fale com a Amauri Assessoria Imobiliária em Santarém, no Pará, pelo WhatsApp ou e-mail.",
-};
+  caminho: "/contato",
+});
 
 export default async function Contato() {
   const config = await getConfig();
@@ -24,7 +26,7 @@ export default async function Contato() {
 
       <main className="container-site py-16 lg:py-24">
         <Revela>
-          <h1 className="max-w-[18ch] text-balance font-display text-display-sm lg:text-display-lg">
+          <h1 className="max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-lg">
             Fale com a assessoria
           </h1>
         </Revela>
@@ -33,9 +35,8 @@ export default async function Contato() {
         <div className="mt-12 grid gap-12 lg:grid-cols-2 lg:gap-20">
           <div>
             <p className="max-w-[46ch] text-pretty leading-relaxed text-fg-muted">
-              O caminho mais rápido é o WhatsApp — é por lá que o atendimento
-              acontece, inclusive para enviar fotos e vídeos de imóveis que
-              ainda não entraram no site.
+              O caminho mais rápido é o WhatsApp. Se preferir, deixe seu número
+              abaixo e entramos em contato.
             </p>
 
             <a
@@ -77,7 +78,7 @@ export default async function Contato() {
           </div>
 
           <div className="border-t border-border-base pt-10 lg:border-l lg:border-t-0 lg:pl-20 lg:pt-0">
-            <h2 className="font-display text-2xl">Prefere ser chamado?</h2>
+            <h2 className="font-titulo text-2xl">Prefere ser chamado?</h2>
             <p className="mt-3 text-pretty leading-relaxed text-fg-muted">
               Deixe seu nome e WhatsApp que a equipe entra em contato.
             </p>

@@ -42,7 +42,7 @@ export function ListaFavoritos({
   if (imoveis.length === 0) {
     return (
       <div className="border-t border-border-base pt-10">
-        <p className="font-display text-2xl">
+        <p className="font-titulo text-2xl">
           {compartilhado
             ? "Esses imóveis não estão mais disponíveis."
             : "Você ainda não salvou nenhum imóvel."}

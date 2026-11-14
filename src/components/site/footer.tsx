@@ -44,7 +44,7 @@ export function Footer({
 
         {COLUNAS.map((coluna) => (
           <nav key={coluna.titulo}>
-            <h2 className="font-display text-lg">{coluna.titulo}</h2>
+            <h2 className="font-titulo text-lg">{coluna.titulo}</h2>
             <ul className="mt-4 space-y-3">
               {coluna.links.map((link) => (
                 <li key={link.href}>
@@ -61,7 +61,7 @@ export function Footer({
         ))}
 
         <div>
-          <h2 className="font-display text-lg">Atendimento</h2>
+          <h2 className="font-titulo text-lg">Atendimento</h2>
           <a
             href={whatsapp}
             target="_blank"

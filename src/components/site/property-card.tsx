@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition, useState } from "react";
@@ -63,7 +62,7 @@ export function PropertyCard({
             className="object-cover transition-transform duration-[900ms] ease-[var(--ease-out-soft)] group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="grid h-full place-items-center text-sm text-fg-subtle">
+          <div className="grid h-full place-items-center text-sm text-fg-muted">
             Sem foto
           </div>
         )}
@@ -71,11 +70,11 @@ export function PropertyCard({
         {/* Selo e contagem ficam sobre a foto, no padrão da referência. */}
         <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
           {imovel.badge ? (
-            <span className="bg-bg px-3 py-1.5 text-[0.6875rem] uppercase tracking-wider text-fg">
+            <span className="bg-bg px-3 py-1.5 text-xs font-medium text-fg">
               {imovel.badge}
             </span>
           ) : imovel.alto_padrao ? (
-            <span className="bg-bg/90 px-3 py-1.5 text-[0.6875rem] uppercase tracking-wider text-fg">
+            <span className="bg-bg/90 px-3 py-1.5 text-xs font-medium text-fg">
               Alto padrão
             </span>
           ) : (
@@ -95,15 +94,9 @@ export function PropertyCard({
       </ViewTransition>
 
       <div className="flex flex-1 flex-col p-5 lg:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <p className="numeros font-display text-[1.6rem] leading-none text-fg">
-            {formatPreco(imovel.preco)}
-          </p>
-          <ArrowUpRight
-            className="mt-0.5 size-5 shrink-0 text-fg-subtle transition-all duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-            strokeWidth={1.5}
-          />
-        </div>
+        <p className="numeros font-titulo text-[1.6rem] leading-none text-fg">
+          {formatPreco(imovel.preco)}
+        </p>
 
         <h3 className="mt-3 text-pretty text-[0.9375rem] leading-snug text-fg">
           {imovel.titulo}

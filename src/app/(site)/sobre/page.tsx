@@ -5,15 +5,17 @@ import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getFacetas } from "@/lib/queries";
+import { metaPagina } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Sobre a assessoria",
-  description:
+export const metadata: Metadata = metaPagina({
+  titulo: "Sobre a assessoria",
+  descricao:
     "Amauri Nobre, corretor em Santarém, no Pará. Assessoria na compra e na venda de imóveis de alto padrão.",
-};
+  caminho: "/sobre",
+});
 
 export default async function Sobre() {
   const [config, facetas] = await Promise.all([getConfig(), getFacetas()]);
@@ -26,40 +28,34 @@ export default async function Sobre() {
       <main>
         <section className="container-site py-16 lg:py-24">
           <Revela>
-          <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
-              Comprar imóvel não é escolher foto bonita
+            <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
+              Assessoria imobiliária em Santarém
             </h1>
-        </Revela>
-
+          </Revela>
 
           <div className="mt-10 grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
             <div className="space-y-5 text-pretty leading-relaxed text-fg-muted">
               <p>
-                A Amauri Assessoria Imobiliária trabalha em Santarém com um
-                recorte claro: imóveis de alto padrão, acompanhados de perto do
-                primeiro contato até a escritura.
+                A Amauri Assessoria Imobiliária atua em Santarém, no Pará, na
+                compra e na venda de casas, apartamentos e terrenos, com foco
+                em imóveis de alto padrão. O responsável é o corretor Amauri
+                Nobre.
               </p>
               <p>
-                Cada imóvel do catálogo foi visitado. A ficha diz a metragem
-                real, o que está incluso e o que não está, e o que falta
-                resolver na documentação antes de fechar. Quando algo não serve
-                para quem procura, o certo é dizer — vale mais que vender
-                depressa.
-              </p>
-              <p>
-                O estoque muda rápido e nem tudo chega a ser anunciado. Se você
-                procura algo específico, é mais rápido falar direto.
+                O catálogo traz a ficha de cada imóvel com dormitórios, suítes,
+                vagas, metragem e fotos. Para marcar uma visita ou tirar uma
+                dúvida, o contato é direto, pelo WhatsApp.
               </p>
             </div>
 
             <dl className="divide-y divide-border-base border-y border-border-base">
               <div className="flex items-baseline justify-between gap-6 py-4">
                 <dt className="text-sm text-fg-muted">Imóveis no catálogo</dt>
-                <dd className="numeros font-display text-2xl">{facetas.total}</dd>
+                <dd className="numeros font-titulo text-2xl">{facetas.total}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-6 py-4">
                 <dt className="text-sm text-fg-muted">Bairros atendidos</dt>
-                <dd className="numeros font-display text-2xl">
+                <dd className="numeros font-titulo text-2xl">
                   {facetas.bairros.length}
                 </dd>
               </div>
@@ -79,7 +75,7 @@ export default async function Sobre() {
 
         <section className="campo-tinta linha-encontro">
           <div className="container-site max-w-2xl py-16 lg:py-24">
-            <h2 className="text-balance font-display text-display-sm">
+            <h2 className="text-balance font-titulo text-display-sm">
               Procura algo que não está no site?
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-fg-muted">

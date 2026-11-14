@@ -1,9 +1,11 @@
 import { AvisoCookies } from "@/components/site/cookies";
 import { Intro } from "@/components/site/intro";
+import { JsonLd } from "@/components/site/json-ld";
 import { Pixels } from "@/components/site/pixels";
 import { Saida } from "@/components/site/saida";
 import { WhatsAppFlutuante } from "@/components/site/whatsapp-float";
 import { getDestaques } from "@/lib/queries";
+import { grafoDoSite } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 /**
@@ -23,6 +25,7 @@ export default async function SiteLayout({
 
   return (
     <>
+      <JsonLd dados={grafoDoSite(contato)} />
       <Intro />
       {children}
       <WhatsAppFlutuante href={linkWhatsApp(contato)} />

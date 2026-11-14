@@ -46,7 +46,7 @@ function Grupo({
 
   return (
     <div className="border-t border-border-base py-5 first:border-t-0 first:pt-0">
-      <p className="text-xs uppercase tracking-[0.18em] text-fg-subtle">{titulo}</p>
+      <p className="text-sm font-medium text-fg">{titulo}</p>
       <ul className="mt-3 space-y-0.5">
         {itens.map((item) => {
           const ativo = atuais[chave] === item.valor;
@@ -172,7 +172,7 @@ export function Filtros({
           />
           <div className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-2xl border-t border-border-base bg-bg">
             <div className="sticky top-0 flex items-center justify-between gap-4 border-b border-border-base bg-bg px-5 py-4">
-              <p className="font-display text-xl">Filtrar</p>
+              <p className="font-titulo text-xl">Filtrar</p>
               <button
                 type="button"
                 onClick={() => setAberto(false)}

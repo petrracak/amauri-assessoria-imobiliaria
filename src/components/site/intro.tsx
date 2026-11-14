@@ -26,8 +26,8 @@ export function Intro() {
       // Navegador com armazenamento bloqueado: a cortina só aparece sempre.
     }
 
-    const sai = setTimeout(() => setSaindo(true), 900);
-    const some = setTimeout(() => setFim(true), 1700);
+    const sai = setTimeout(() => setSaindo(true), 550);
+    const some = setTimeout(() => setFim(true), 1150);
     return () => {
       clearTimeout(sai);
       clearTimeout(some);

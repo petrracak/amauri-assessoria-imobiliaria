@@ -8,15 +8,19 @@ import { PropertyCard } from "@/components/site/property-card";
 import { SiteHeader } from "@/components/site/site-header";
 import { FAIXAS_PRECO, getFacetas, getImoveis, type Ordenacao } from "@/lib/queries";
 import { redirect } from "next/navigation";
+import { metaPagina } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Imóveis à venda em Santarém",
-  description:
+// Filtros e ordenação mudam a lista, não a página: o canonical sempre aponta
+// para /imoveis, para o Google não tratar cada combinação como página nova.
+export const metadata: Metadata = metaPagina({
+  titulo: "Imóveis à venda em Santarém",
+  descricao:
     "Casas, apartamentos e terrenos à venda em Santarém, no Pará, com assessoria completa da Amauri.",
-};
+  caminho: "/imoveis",
+});
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
@@ -120,7 +124,7 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
       <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
-        <h1 className="text-balance font-display text-display-sm lg:text-display-md">
+        <h1 className="text-balance font-titulo text-display-sm lg:text-display-md">
           {titulo}
         </h1>
 
@@ -196,7 +200,7 @@ export default async function Imoveis({ searchParams }: { searchParams: Params }
               </div>
             ) : (
               <div className="mt-12 border-t border-border-base pt-10">
-                <p className="font-display text-2xl">Nada com esse filtro.</p>
+                <p className="font-titulo text-2xl">Nada com esse filtro.</p>
                 <p className="mt-3 max-w-[48ch] text-pretty leading-relaxed text-fg-muted">
                   Tente outro bairro ou faixa de valor. Se procura algo
                   específico, fale direto com o Amauri — boa parte do estoque de

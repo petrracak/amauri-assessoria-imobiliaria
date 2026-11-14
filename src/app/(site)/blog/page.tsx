@@ -7,16 +7,18 @@ import { Revela } from "@/components/site/revela";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { getCategorias, getPosts, type PostCard } from "@/lib/blog";
+import { metaPagina } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 import { cn, formatDate } from "@/lib/utils";
 
 export const revalidate = 600;
 
-export const metadata: Metadata = {
-  title: "Blog",
-  description:
+export const metadata: Metadata = metaPagina({
+  titulo: "Blog",
+  descricao:
     "Mercado imobiliário de Santarém, financiamento, documentação e o que observar antes de comprar.",
-};
+  caminho: "/blog",
+});
 
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
@@ -50,7 +52,7 @@ function Cartao({ post, destaque = false }: { post: PostCard; destaque?: boolean
 
           <h2
             className={cn(
-              "mt-2 text-pretty font-display leading-tight transition-colors group-hover:text-accent",
+              "mt-2 text-pretty font-titulo leading-tight transition-colors group-hover:text-accent",
               destaque ? "text-display-sm" : "text-2xl",
             )}
           >
@@ -93,7 +95,7 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
 
       <main className="container-site py-12 lg:py-16">
         <Revela>
-          <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
+          <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
             Antes de comprar, vale entender
           </h1>
           <p className="mt-4 max-w-[52ch] text-pretty leading-relaxed text-fg-muted">
@@ -144,7 +146,7 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
           </div>
         ) : (
           <div className="mt-16 border-t border-border-base pt-10">
-            <p className="font-display text-2xl">Ainda não há textos publicados.</p>
+            <p className="font-titulo text-2xl">Ainda não há textos publicados.</p>
             <p className="mt-3 max-w-[50ch] text-pretty leading-relaxed text-fg-muted">
               {categoria
                 ? "Nada nessa categoria por enquanto."
@@ -164,7 +166,7 @@ export default async function Blog({ searchParams }: { searchParams: Params }) {
 
       <section className="campo-tinta linha-encontro">
         <div className="container-site max-w-2xl py-16 lg:py-20">
-          <h2 className="text-balance font-display text-display-sm">
+          <h2 className="text-balance font-titulo text-display-sm">
             Receba os imóveis novos antes de todo mundo
           </h2>
           <p className="mt-4 text-pretty leading-relaxed text-fg-muted">

@@ -43,7 +43,7 @@ export async function getPost(slug: string) {
   const { data, error } = await supabase
     .from("posts")
     .select(
-      `${CAMPOS_CARD}, conteudo, meta_title, meta_description,
+      `${CAMPOS_CARD}, conteudo, meta_title, meta_description, updated_at,
        autor:profiles (nome)`,
     )
     .eq("slug", slug)

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,11 +7,24 @@ import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
 import { PropertyCard } from "@/components/site/property-card";
 import { Revela } from "@/components/site/revela";
+import type { Metadata } from "next";
+
 import { getDestaques, getFacetas } from "@/lib/queries";
+import { DESCRICAO_PADRAO, metaPagina } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 import { formatPreco } from "@/lib/utils";
 
 export const revalidate = 300;
+
+export const metadata: Metadata = {
+  ...metaPagina({
+    titulo: "Imóveis de alto padrão em Santarém | Amauri Assessoria Imobiliária",
+    descricao: DESCRICAO_PADRAO,
+    caminho: "/",
+  }),
+  // Título absoluto: sem o sufixo do template, que repetiria o nome da empresa.
+  title: { absolute: "Imóveis de alto padrão em Santarém | Amauri Assessoria Imobiliária" },
+};
 
 export default async function Home() {
   const [config, destaques, facetas] = await Promise.all([
@@ -86,11 +99,7 @@ export default async function Home() {
           />
 
           <div className="container-site pb-16 pt-36 lg:pb-24 lg:pt-56">
-            <p className="hero-item text-xs uppercase tracking-[0.22em] text-white/60">
-              Santarém · Pará
-            </p>
-
-            <h1 className="hero-item mt-5 max-w-[16ch] text-balance font-display text-display-md text-white lg:text-display-xl">
+            <h1 className="hero-item max-w-[16ch] text-balance font-titulo text-display-md text-white lg:text-display-xl">
               Imóveis de alto padrão em Santarém
             </h1>
 
@@ -124,7 +133,7 @@ export default async function Home() {
             {/* Frase inteira em caixa alta com espaçamento largo fica difícil
                 de ler; em caixa normal ela convida em vez de gritar. */}
             <div className="hero-item mt-14 hidden items-center gap-3 text-sm text-white/60 lg:flex">
-              <ArrowDown className="size-4 animate-bounce" strokeWidth={1.5} />
+              <span className="h-px w-10 bg-white/45" aria-hidden />
               Role para baixo e encontre o seu novo imóvel
             </div>
           </div>
@@ -134,23 +143,14 @@ export default async function Home() {
         <section className="container-site py-20 lg:py-28">
           <Revela>
             <div className="flex flex-wrap items-end justify-between gap-5">
-              <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-fg-subtle">
-                  Acervo
-                </p>
-                <h2 className="mt-4 max-w-[18ch] text-balance font-display text-display-sm lg:text-display-md">
-                  Selecionados para quem já sabe o que quer
-                </h2>
-              </div>
+              <h2 className="max-w-[18ch] text-balance font-titulo text-display-sm lg:text-display-md">
+                Imóveis disponíveis agora
+              </h2>
               <Link
                 href="/imoveis"
-                className="group flex items-center gap-2 text-sm text-accent"
+                className="text-sm text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent"
               >
                 Ver os {facetas.total} imóveis
-                <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
-                  strokeWidth={1.5}
-                />
               </Link>
             </div>
           </Revela>
@@ -161,41 +161,21 @@ export default async function Home() {
                 <PropertyCard imovel={principal} prioridade formato="largo" />
               </div>
 
-              {/* Bloco de dados no meio da grade: quebra a repetição de cards
-                  e responde a pergunta que todo visitante faz primeiro. */}
+              {/* No meio da grade, em vez de mais um card: o tamanho do acervo
+                  dito em uma frase, com o caminho para o catálogo inteiro. */}
               <Link
                 href="/imoveis"
                 className="campo-tinta group col-span-6 flex flex-col justify-between p-7 transition-opacity hover:opacity-95 sm:col-span-3 lg:col-span-2"
               >
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-fg-subtle">
-                    No catálogo hoje
-                  </p>
-                  <p className="numeros mt-6 font-display text-display-md leading-none">
-                    {facetas.total}
-                  </p>
-                  <p className="mt-2 text-sm text-fg-muted">
-                    imóveis em {facetas.bairros.length} bairros
-                  </p>
-                </div>
+                <p className="text-balance font-titulo text-[1.75rem] leading-[1.2]">
+                  {facetas.total} imóveis em {facetas.bairros.length} bairros de
+                  Santarém, a partir de{" "}
+                  <span className="numeros">{formatPreco(menorPreco)}</span>.
+                </p>
 
-                <div className="mt-10">
-                  <div className="linha-encontro pt-5">
-                    <p className="text-sm text-fg-muted">
-                      A partir de{" "}
-                      <span className="numeros text-fg">
-                        {formatPreco(menorPreco)}
-                      </span>
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-2 text-sm text-accent">
-                      Ver todos
-                      <ArrowRight
-                        className="size-4 transition-transform duration-300 group-hover:translate-x-1"
-                        strokeWidth={1.5}
-                      />
-                    </span>
-                  </div>
-                </div>
+                <span className="mt-10 border-t border-border-strong pt-5 text-sm underline-offset-4 group-hover:underline">
+                  Abrir o catálogo completo
+                </span>
               </Link>
 
               {demais.map((imovel, i) => (
@@ -218,54 +198,31 @@ export default async function Home() {
         <section className="border-y border-border-base bg-bg-subtle">
           <div className="container-site grid gap-12 py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
             <Revela>
-              <p className="text-xs uppercase tracking-[0.22em] text-fg-subtle">
-                A assessoria
-              </p>
-              <h2 className="mt-4 max-w-[20ch] text-balance font-display text-display-sm lg:text-display-md">
-                Cada imóvel daqui foi visitado antes de entrar no site
+              <h2 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-md">
+                Amauri Nobre, corretor em Santarém
               </h2>
               <div className="mt-6 max-w-[48ch] space-y-4 text-pretty leading-relaxed text-fg-muted">
                 <p>
-                  A ficha diz a metragem real, o que está incluso e o que falta
-                  resolver na documentação. Quando um imóvel não serve para quem
-                  procura, o certo é dizer.
+                  Assessoria na compra e na venda de casas, apartamentos e
+                  terrenos em Santarém, no Pará. O atendimento é direto com o
+                  Amauri, pelo WhatsApp.
                 </p>
                 <p>
-                  O estoque de alto padrão em Santarém muda rápido, e boa parte
-                  nem chega a ser anunciada.
+                  Cada anúncio traz a ficha do imóvel com dormitórios, vagas,
+                  metragem e fotos, para você saber o que esperar antes de
+                  marcar uma visita.
                 </p>
               </div>
 
-              <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-border-strong pt-8">
-                <div>
-                  <dt className="text-sm text-fg-muted">Imóveis</dt>
-                  <dd className="numeros mt-1 font-display text-3xl">
-                    {facetas.total}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-fg-muted">Bairros</dt>
-                  <dd className="numeros mt-1 font-display text-3xl">
-                    {facetas.bairros.length}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-fg-muted">CRECI</dt>
-                  <dd className="numeros mt-1 font-display text-3xl">
-                    {config.contato.creci.replace(/\D/g, "")}
-                  </dd>
-                </div>
-              </dl>
+              <p className="numeros mt-8 text-sm text-fg-muted">
+                CRECI {config.contato.creci}
+              </p>
 
               <Link
                 href="/sobre"
-                className="group mt-10 inline-flex items-center gap-2 text-sm text-accent"
+                className="mt-6 inline-block text-sm text-accent underline underline-offset-4 decoration-accent/40 transition-colors hover:decoration-accent"
               >
                 Conhecer a assessoria
-                <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
-                  strokeWidth={1.5}
-                />
               </Link>
             </Revela>
 
@@ -287,10 +244,7 @@ export default async function Home() {
           <div className="container-site py-20 lg:py-28">
             <div className="grid gap-12 lg:grid-cols-[22rem_1fr] lg:gap-20">
               <Revela>
-                <p className="text-xs uppercase tracking-[0.22em] text-fg-subtle">
-                  Onde atuamos
-                </p>
-                <h2 className="mt-4 text-balance font-display text-display-sm lg:text-display-md">
+                <h2 className="text-balance font-titulo text-display-sm lg:text-display-md">
                   Santarém, bairro por bairro
                 </h2>
                 <p className="mt-5 max-w-[40ch] text-pretty leading-relaxed text-fg-muted">
@@ -320,7 +274,7 @@ export default async function Home() {
         {/* -------------------------------------------------------- captura */}
         <section className="container-site py-20 lg:py-28">
           <Revela className="max-w-2xl">
-            <h2 className="text-balance font-display text-display-sm lg:text-display-md">
+            <h2 className="text-balance font-titulo text-display-sm lg:text-display-md">
               Receba os imóveis novos antes de todo mundo
             </h2>
             <p className="mt-5 text-pretty leading-relaxed text-fg-muted">

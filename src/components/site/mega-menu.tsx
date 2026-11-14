@@ -22,7 +22,7 @@ function Coluna({
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-[0.18em] text-fg-subtle">{titulo}</p>
+      <p className="text-sm font-medium text-fg">{titulo}</p>
       <ul className="mt-4 space-y-0.5">
         {itens.map((item) => (
           <li key={item.href}>

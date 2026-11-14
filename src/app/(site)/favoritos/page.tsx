@@ -34,7 +34,7 @@ export default async function Favoritos({ searchParams }: { searchParams: Params
       <SiteHeader />
 
       <main className="container-site py-12 lg:py-16">
-        <h1 className="font-display text-display-sm lg:text-display-md">
+        <h1 className="font-titulo text-display-sm lg:text-display-md">
           Imóveis salvos
         </h1>
         <p className="mt-3 max-w-[54ch] text-pretty leading-relaxed text-fg-muted">

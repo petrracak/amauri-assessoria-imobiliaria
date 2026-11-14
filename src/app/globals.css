@@ -26,7 +26,10 @@
   --color-brand-950: #121f33;
 
   --font-sans: var(--font-sans-base), ui-sans-serif, system-ui, sans-serif;
+  /* Painel (Archivo, carregada só em /admin). */
   --font-display: var(--font-display-base), ui-sans-serif, system-ui, sans-serif;
+  /* Títulos do site público. */
+  --font-titulo: var(--font-titulo-base), Georgia, "Times New Roman", serif;
 
   /* Curvas: entrada suave, sem "mola" — o site é sóbrio, não saltitante. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -38,9 +41,9 @@
   --text-display-sm--line-height: 1.15;
   --text-display-md: 2.5rem;
   --text-display-md--line-height: 1.08;
-  --text-display-lg: 3.5rem;
+  --text-display-lg: 3.75rem;
   --text-display-lg--line-height: 1.02;
-  --text-display-xl: 4.75rem;
+  --text-display-xl: 5.25rem;
   --text-display-xl--line-height: 0.98;
 }
 
@@ -52,7 +55,7 @@
   --bg-elevated: #ffffff;
   --fg: #101723;
   --fg-muted: #5a6475;
-  --fg-subtle: #8a94a6;
+  --fg-subtle: #667085;
   --border: #e5e8ee;
   --border-strong: #d2d7e0;
   --accent: var(--color-brand-700);
@@ -137,12 +140,19 @@
 }
 
 @layer base {
-  /* Títulos expandidos: é o que dá porte arquitetônico à página. O eixo de
-     largura do Archivo faz isso sem distorcer a letra. */
+  /* Painel: títulos expandidos. O eixo de largura da Archivo dá porte sem
+     distorcer a letra. */
   .font-display {
     font-stretch: 112%;
     letter-spacing: -0.02em;
     font-weight: 600;
+  }
+
+  /* Site público. Peso de texto, não de cartaz: a serifada fica melhor
+     regular, com entrelinha curta e espaçamento levemente fechado. */
+  .font-titulo {
+    font-weight: 400;
+    letter-spacing: -0.018em;
   }
 }
 
@@ -155,8 +165,8 @@ html[data-intro="visto"] #intro {
 
 #intro {
   transition:
-    transform 0.8s var(--ease-in-out-soft),
-    opacity 0.8s var(--ease-in-out-soft);
+    transform 0.55s var(--ease-in-out-soft),
+    opacity 0.55s var(--ease-in-out-soft);
 }
 
 #intro[data-saindo] {
@@ -165,11 +175,11 @@ html[data-intro="visto"] #intro {
 }
 
 .intro-marca {
-  animation: intro-marca 0.9s var(--ease-out-soft) both;
+  animation: intro-marca 0.6s var(--ease-out-soft) both;
 }
 
 .intro-linha {
-  animation: intro-linha 1s var(--ease-out-soft) 0.25s both;
+  animation: intro-linha 0.7s var(--ease-out-soft) 0.15s both;
 }
 
 @keyframes intro-marca {
@@ -232,13 +242,13 @@ html[data-intro="visto"] #intro {
 
 /* Entra depois da cortina de abertura, como o resto do site. */
 .login-entra {
-  animation: sobe 0.8s var(--ease-out-soft) 1.05s both;
+  animation: sobe 0.8s var(--ease-out-soft) 0.55s both;
 }
 .login-entra:nth-child(2) {
-  animation-delay: 1.15s;
+  animation-delay: 0.63s;
 }
 .login-entra:nth-child(3) {
-  animation-delay: 1.3s;
+  animation-delay: 0.78s;
 }
 html[data-intro="visto"] .login-entra {
   animation-delay: 0.05s;
@@ -264,19 +274,19 @@ html[data-intro="visto"] .login-entra:nth-child(3) {
   animation: sobe 0.8s var(--ease-out-soft) both;
 }
 .hero-item:nth-child(1) {
-  animation-delay: 1.05s;
+  animation-delay: 0.55s;
 }
 .hero-item:nth-child(2) {
-  animation-delay: 1.15s;
+  animation-delay: 0.63s;
 }
 .hero-item:nth-child(3) {
-  animation-delay: 1.25s;
+  animation-delay: 0.71s;
 }
 .hero-item:nth-child(4) {
-  animation-delay: 1.35s;
+  animation-delay: 0.79s;
 }
 .hero-item:nth-child(5) {
-  animation-delay: 1.5s;
+  animation-delay: 0.9s;
 }
 
 html[data-intro="visto"] .hero-item {
@@ -362,8 +372,8 @@ html[data-intro="visto"] .hero-item {
 
   /* Preço, área, dormitórios: numeral de largura fixa não "dança" na troca. */
   .numeros {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-feature-settings: "lnum" 1, "tnum" 1;
   }
 
   /* ---------------------------------------------------------------
@@ -381,7 +391,7 @@ html[data-intro="visto"] .hero-item {
     color: #eaf0f8;
     --fg: #eaf0f8;
     --fg-muted: #9fb0c8;
-    --fg-subtle: #7286a3;
+    --fg-subtle: #8497b3;
     --border: #22304a;
     --accent: #7fb3ee;
     --accent-fg: var(--color-brand-950);

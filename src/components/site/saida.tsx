@@ -127,7 +127,7 @@ export function Saida({ imoveis }: { imoveis: ImovelCard[] }) {
 
           <h2
             id="saida-titulo"
-            className="mt-6 max-w-[22ch] text-balance font-display text-display-sm"
+            className="mt-6 max-w-[22ch] text-balance font-titulo text-display-sm"
           >
             Antes de sair, veja o que acabou de entrar
           </h2>
@@ -143,7 +143,7 @@ export function Saida({ imoveis }: { imoveis: ImovelCard[] }) {
 
         {imoveis.length > 0 ? (
           <div className="border-t border-border-base pb-8 pt-7">
-            <p className="px-6 text-xs uppercase tracking-[0.18em] text-fg-subtle sm:px-9">
+            <p className="px-6 text-sm font-medium text-fg-muted sm:px-9">
               Em destaque agora
             </p>
 
@@ -168,7 +168,7 @@ export function Saida({ imoveis }: { imoveis: ImovelCard[] }) {
                         />
                       ) : null}
                     </div>
-                    <p className="numeros mt-3 font-display text-lg">
+                    <p className="numeros mt-3 font-titulo text-lg">
                       {formatPreco(imovel.preco)}
                     </p>
                     <p className="mt-1 truncate text-sm text-fg-muted">

@@ -205,13 +205,13 @@ export function Header({
               href={item.href}
               onClick={() => setAberto(false)}
               style={{ animationDelay: `${i * 55}ms` }}
-              className="menu-item border-b border-border-base py-5 font-display text-2xl"
+              className="menu-item border-b border-border-base py-5 font-titulo text-2xl"
             >
               {item.label}
             </Link>
           ))}
 
-          <p className="mt-8 text-xs uppercase tracking-[0.18em] text-fg-subtle">
+          <p className="mt-8 text-sm font-medium text-fg-muted">
             Buscar por tipo
           </p>
           <ul className="mt-3 grid grid-cols-2 gap-2">

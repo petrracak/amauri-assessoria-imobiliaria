@@ -22,13 +22,13 @@ export default async function Privacidade() {
       <SiteHeader />
 
       <main className="container-site py-16 lg:py-24">
-        <h1 className="max-w-[20ch] text-balance font-display text-display-sm lg:text-display-lg">
+        <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
           Como tratamos seus dados
         </h1>
 
         <div className="mt-12 max-w-[68ch] space-y-10 text-pretty leading-relaxed text-fg-muted">
           <section>
-            <h2 className="font-display text-2xl text-fg">O que guardamos</h2>
+            <h2 className="font-titulo text-2xl text-fg">O que guardamos</h2>
             <p className="mt-4">
               Se você preencher o formulário do site, guardamos apenas o que
               você escreveu: nome e WhatsApp, mais o imóvel que estava vendo, se
@@ -38,7 +38,7 @@ export default async function Privacidade() {
           </section>
 
           <section>
-            <h2 className="font-display text-2xl text-fg">Cookies</h2>
+            <h2 className="font-titulo text-2xl text-fg">Cookies</h2>
             <p className="mt-4">
               O site só carrega ferramentas de medição e de anúncio depois que
               você aceita. Se recusar, nada de rastreio é carregado e a
@@ -48,7 +48,7 @@ export default async function Privacidade() {
           </section>
 
           <section>
-            <h2 className="font-display text-2xl text-fg">
+            <h2 className="font-titulo text-2xl text-fg">
               Com quem compartilhamos
             </h2>
             <p className="mt-4">
@@ -59,7 +59,7 @@ export default async function Privacidade() {
           </section>
 
           <section>
-            <h2 className="font-display text-2xl text-fg">Seus direitos</h2>
+            <h2 className="font-titulo text-2xl text-fg">Seus direitos</h2>
             <p className="mt-4">
               Pela Lei Geral de Proteção de Dados, você pode pedir para ver,
               corrigir ou apagar seus dados a qualquer momento. Basta escrever

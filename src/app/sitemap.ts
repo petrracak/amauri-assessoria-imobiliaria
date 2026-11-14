@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
 
 import { getPosts } from "@/lib/blog";
-import { getImoveis } from "@/lib/queries";
+import { imagemAbsoluta } from "@/lib/seo";
 import { siteUrl } from "@/lib/site";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const revalidate = 3600;
 
@@ -18,13 +19,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const [imoveis, posts] = await Promise.all([getImoveis({}, 500), getPosts(500)]);
+    const supabase = createPublicClient();
+    const [{ data: imoveis, error }, posts] = await Promise.all([
+      supabase
+        .from("properties")
+        .select("slug, updated_at, imagens:property_images (url, ordem)")
+        .eq("status", "publicado")
+        .order("updated_at", { ascending: false })
+        .limit(500),
+      getPosts(500),
+    ]);
+    if (error) throw error;
+
     return [
       ...fixas,
-      ...imoveis.map((imovel) => ({
+      ...(imoveis ?? []).map((imovel) => ({
         url: `${base}/imoveis/${imovel.slug}`,
+        // A data real da última edição: é o que diz ao buscador e às IAs
+        // quando vale voltar a ler a página.
+        lastModified: new Date(imovel.updated_at),
         changeFrequency: "weekly" as const,
         priority: 0.8,
+        images: [...(imovel.imagens ?? [])]
+          .sort((a, b) => a.ordem - b.ordem)
+          .slice(0, 5)
+          .map((foto) => imagemAbsoluta(foto.url)),
       })),
       ...posts.map((post) => ({
         url: `${base}/blog/${post.slug}`,

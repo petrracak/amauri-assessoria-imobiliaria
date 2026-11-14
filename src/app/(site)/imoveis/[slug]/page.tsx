@@ -9,8 +9,10 @@ import { Gallery } from "@/components/site/gallery";
 import { SiteHeader } from "@/components/site/site-header";
 import { PropertyCard } from "@/components/site/property-card";
 import { specsDe, type Spec } from "@/components/site/specs";
+import { JsonLd } from "@/components/site/json-ld";
 import { embedSeguro, linkSeguro } from "@/lib/mapa";
 import { getImoveis, getImovel } from "@/lib/queries";
+import { anuncioDoImovel, descricaoDoImovel, imagemAbsoluta, metaPagina, migalhas } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 import { formatPreco } from "@/lib/utils";
 
@@ -30,14 +32,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!imovel) return { title: "Imóvel não encontrado" };
 
   const capa = imovel.imagens?.[0]?.url;
-  return {
-    title: imovel.meta_title ?? imovel.titulo,
-    description:
-      imovel.meta_description ??
-      `${imovel.titulo} em ${imovel.bairro ?? imovel.cidade}. ${formatPreco(imovel.preco)}.`,
-    alternates: { canonical: `/imoveis/${imovel.slug}` },
-    openGraph: capa ? { images: [{ url: capa }] } : undefined,
-  };
+  return metaPagina({
+    titulo: imovel.meta_title ?? imovel.titulo,
+    descricao: descricaoDoImovel(imovel),
+    caminho: `/imoveis/${imovel.slug}`,
+    imagem: capa ? imagemAbsoluta(capa) : null,
+  });
 }
 
 function Ficha({ specs }: { specs: Spec[] }) {
@@ -46,7 +46,7 @@ function Ficha({ specs }: { specs: Spec[] }) {
       {specs.map(({ chave, valor, rotulo, Icone }) => (
         <div key={chave} className="bg-bg px-5 py-6">
           <Icone className="size-6 text-accent" strokeWidth={1.25} />
-          <dd className="numeros mt-4 font-display text-2xl leading-none">
+          <dd className="numeros mt-4 font-titulo text-2xl leading-none">
             {valor}
           </dd>
           <dt className="mt-1.5 text-sm text-fg-muted">{rotulo}</dt>
@@ -87,6 +87,16 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
   return (
     <>
+      <JsonLd
+        dados={[
+          anuncioDoImovel(imovel, caracteristicas),
+          migalhas([
+            { nome: "Início", caminho: "/" },
+            { nome: "Imóveis", caminho: "/imoveis" },
+            { nome: imovel.titulo, caminho: `/imoveis/${imovel.slug}` },
+          ]),
+        ]}
+      />
       <SiteHeader />
 
       <main className="container-site pb-10 pt-8 lg:py-12">
@@ -115,7 +125,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
             <p className="numeros text-xs text-fg-subtle">
               Referência {imovel.ref}
             </p>
-            <h1 className="mt-2 text-balance font-display text-display-sm leading-tight">
+            <h1 className="mt-2 text-balance font-titulo text-display-sm leading-tight">
               {imovel.titulo}
             </h1>
             <p className="mt-2 text-fg-muted">
@@ -123,7 +133,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
               {imovel.cidade} — {imovel.uf}
             </p>
 
-            <p className="numeros mt-6 font-display text-display-sm">
+            <p className="numeros mt-6 font-titulo text-display-sm">
               {formatPreco(imovel.preco)}
             </p>
             {imovel.preco_anterior ? (
@@ -169,7 +179,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
         {imovel.descricao ? (
           <section className="mt-14 max-w-[65ch]">
-            <h2 className="font-display text-display-sm">Sobre o imóvel</h2>
+            <h2 className="font-titulo text-display-sm">Sobre o imóvel</h2>
             <div className="mt-5 space-y-4 text-pretty leading-relaxed text-fg-muted">
               {imovel.descricao
                 .split(/\n{2,}/)
@@ -185,7 +195,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
         {mapaEmbed || mapaLink ? (
           <section className="mt-14 max-w-[65ch]">
-            <h2 className="font-display text-display-sm">Localização</h2>
+            <h2 className="font-titulo text-display-sm">Localização</h2>
             <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
               {[imovel.endereco, imovel.bairro, imovel.cidade].filter(Boolean).join(", ")}
             </p>
@@ -222,7 +232,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
           <section className="mt-14 grid gap-10 sm:grid-cols-2">
             {doImovel.length > 0 ? (
               <div>
-                <h2 className="font-display text-2xl">O que tem no imóvel</h2>
+                <h2 className="font-titulo text-2xl">O que tem no imóvel</h2>
                 <ul className="mt-5 grid gap-y-2.5">
                   {doImovel.map((c) => (
                     <li key={c.nome} className="text-[0.9375rem] text-fg-muted">
@@ -235,7 +245,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
             {doEmpreendimento.length > 0 ? (
               <div>
-                <h2 className="font-display text-2xl">O que tem no condomínio</h2>
+                <h2 className="font-titulo text-2xl">O que tem no condomínio</h2>
                 <ul className="mt-5 grid gap-y-2.5">
                   {doEmpreendimento.map((c) => (
                     <li key={c.nome} className="text-[0.9375rem] text-fg-muted">
@@ -250,7 +260,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
 
         {semelhantes.length > 0 ? (
           <section className="mt-20 border-t border-border-base pt-12">
-            <h2 className="font-display text-display-sm">Imóveis parecidos</h2>
+            <h2 className="font-titulo text-display-sm">Imóveis parecidos</h2>
             <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {semelhantes.map((i) => (
                 <PropertyCard key={i.id} imovel={i} />
@@ -263,7 +273,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
       {/* Barra fixa de contato no celular — o botão principal nunca some. */}
       <div className="sticky bottom-0 z-40 border-t border-border-base bg-bg/95 px-5 py-3 backdrop-blur-md lg:hidden">
         <div className="flex items-center gap-4">
-          <p className="numeros flex-1 font-display text-xl">
+          <p className="numeros flex-1 font-titulo text-xl">
             {formatPreco(imovel.preco)}
           </p>
           <a

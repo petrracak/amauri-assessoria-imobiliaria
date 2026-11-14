@@ -6,7 +6,9 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/site/footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { LeadForm } from "@/components/site/lead-form";
+import { JsonLd } from "@/components/site/json-ld";
 import { getPost, getPosts } from "@/lib/blog";
+import { ID_ORGANIZACAO, absoluta, imagemAbsoluta, metaPagina, migalhas } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 import { RichText, resumoDe } from "@/lib/texto";
 import { formatDate } from "@/lib/utils";
@@ -28,18 +30,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const descricao =
     post.meta_description ?? post.resumo ?? resumoDe(post.conteudo ?? "");
 
-  return {
-    title: post.meta_title ?? post.titulo,
-    description: descricao,
-    alternates: { canonical: `/blog/${post.slug}` },
-    openGraph: {
-      type: "article",
-      title: post.titulo,
-      description: descricao,
-      publishedTime: post.publicado_em ?? undefined,
-      images: post.capa_url ? [{ url: post.capa_url }] : undefined,
-    },
-  };
+  return metaPagina({
+    titulo: post.meta_title ?? post.titulo,
+    descricao,
+    caminho: `/blog/${post.slug}`,
+    imagem: post.capa_url ? imagemAbsoluta(post.capa_url) : null,
+    tipo: "article",
+    publicadoEm: post.publicado_em,
+  });
 }
 
 export default async function PostPage({ params }: { params: Params }) {
@@ -51,8 +49,36 @@ export default async function PostPage({ params }: { params: Params }) {
   const whatsapp = linkWhatsApp(config.contato);
   const outros = (await getPosts(4)).filter((p) => p.id !== post.id).slice(0, 3);
 
+  const url = absoluta(`/blog/${post.slug}`);
+
   return (
     <>
+      <JsonLd
+        dados={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "@id": `${url}#texto`,
+            headline: post.titulo,
+            description: post.meta_description ?? post.resumo ?? resumoDe(post.conteudo ?? ""),
+            image: post.capa_url ? [imagemAbsoluta(post.capa_url)] : [absoluta("/og.jpg")],
+            datePublished: post.publicado_em ?? undefined,
+            dateModified: (post as { updated_at?: string }).updated_at ?? post.publicado_em ?? undefined,
+            inLanguage: "pt-BR",
+            articleSection: post.categoria ?? undefined,
+            mainEntityOfPage: url,
+            author: post.autor?.nome
+              ? { "@type": "Person", name: post.autor.nome }
+              : { "@id": ID_ORGANIZACAO },
+            publisher: { "@id": ID_ORGANIZACAO },
+          },
+          migalhas([
+            { nome: "Início", caminho: "/" },
+            { nome: "Blog", caminho: "/blog" },
+            { nome: post.titulo, caminho: `/blog/${post.slug}` },
+          ]),
+        ]}
+      />
       <SiteHeader />
 
       <main>
@@ -77,7 +103,7 @@ export default async function PostPage({ params }: { params: Params }) {
           <header className="mt-6">
             {/* O limite fica no h1: `ch` acompanha a fonte do próprio elemento,
                 e na div externa daria uma coluna estreitíssima. */}
-            <h1 className="max-w-[20ch] text-balance font-display text-display-sm leading-tight lg:text-display-lg">
+            <h1 className="max-w-[20ch] text-balance font-titulo text-display-sm leading-tight lg:text-display-lg">
               {post.titulo}
             </h1>
           </header>
@@ -101,7 +127,7 @@ export default async function PostPage({ params }: { params: Params }) {
           ) : null}
 
           {post.resumo ? (
-            <p className="mt-10 max-w-[58ch] text-pretty font-display text-xl leading-relaxed text-fg-muted lg:text-2xl">
+            <p className="mt-10 max-w-[58ch] text-pretty font-titulo text-xl leading-relaxed text-fg-muted lg:text-2xl">
               {post.resumo}
             </p>
           ) : null}
@@ -116,7 +142,7 @@ export default async function PostPage({ params }: { params: Params }) {
 
         <section className="campo-tinta linha-encontro">
           <div className="container-site max-w-2xl py-16 lg:py-20">
-            <h2 className="text-balance font-display text-display-sm">
+            <h2 className="text-balance font-titulo text-display-sm">
               Quer conversar sobre um imóvel?
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
@@ -131,7 +157,7 @@ export default async function PostPage({ params }: { params: Params }) {
 
         {outros.length > 0 ? (
           <section className="container-site py-16 lg:py-20">
-            <h2 className="font-display text-display-sm">Outros textos</h2>
+            <h2 className="font-titulo text-display-sm">Outros textos</h2>
             <div className="mt-8 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
               {outros.map((outro) => (
                 <Link key={outro.id} href={`/blog/${outro.slug}`} className="group block">
@@ -146,7 +172,7 @@ export default async function PostPage({ params }: { params: Params }) {
                       />
                     </div>
                   ) : null}
-                  <h3 className="mt-5 text-pretty font-display text-xl leading-tight transition-colors group-hover:text-accent">
+                  <h3 className="mt-5 text-pretty font-titulo text-xl leading-tight transition-colors group-hover:text-accent">
                     {outro.titulo}
                   </h3>
                   {outro.publicado_em ? (
