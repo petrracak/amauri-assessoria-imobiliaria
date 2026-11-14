@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { salvarConfig, type EstadoConfig } from "@/app/actions/configuracoes";
-import type { Contato, Hero, Pixels } from "@/lib/settings";
+import type { Contato, Hero, Pixels, Sobre } from "@/lib/settings";
 import { BarraSalvar, Campo, Cartao, botao, campo } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 
@@ -20,10 +20,12 @@ function Salvar() {
 export function SettingsForm({
   contato,
   hero,
+  sobre,
   pixels,
 }: {
   contato: Contato;
   hero: Hero;
+  sobre: Sobre;
   pixels: Pixels;
 }) {
   const [estado, acao] = useActionState<EstadoConfig, FormData>(salvarConfig, {
@@ -91,6 +93,66 @@ export function SettingsForm({
               name="hero_subtitulo"
               defaultValue={hero.subtitulo}
               className={campo}
+            />
+          </Campo>
+        </div>
+      </Cartao>
+
+      <Cartao
+        titulo="Sobre a assessoria"
+        descricao="Os números e a apresentação que aparecem na home e na página Sobre."
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Campo nome="anos_atuacao" rotulo="Anos de atuação" dica="Só o número, ex.: 14">
+            <input
+              id="anos_atuacao"
+              name="anos_atuacao"
+              inputMode="numeric"
+              defaultValue={sobre.anos_atuacao}
+              className={cn(campo, "numeros")}
+            />
+          </Campo>
+
+          <Campo
+            nome="imoveis_vendidos"
+            rotulo="Imóveis vendidos"
+            dica="Como deve aparecer, ex.: +3.500"
+          >
+            <input
+              id="imoveis_vendidos"
+              name="imoveis_vendidos"
+              defaultValue={sobre.imoveis_vendidos}
+              className={cn(campo, "numeros")}
+            />
+          </Campo>
+
+          <Campo
+            nome="apresentacao"
+            rotulo="Apresentação"
+            dica="Primeiro parágrafo: quem é a assessoria."
+            className="sm:col-span-2"
+          >
+            <textarea
+              id="apresentacao"
+              name="apresentacao"
+              rows={3}
+              defaultValue={sobre.apresentacao}
+              className={cn(campo, "resize-y leading-relaxed")}
+            />
+          </Campo>
+
+          <Campo
+            nome="compromisso"
+            rotulo="Compromisso"
+            dica="Segundo parágrafo: o que a pessoa pode esperar do atendimento."
+            className="sm:col-span-2"
+          >
+            <textarea
+              id="compromisso"
+              name="compromisso"
+              rows={3}
+              defaultValue={sobre.compromisso}
+              className={cn(campo, "resize-y leading-relaxed")}
             />
           </Campo>
         </div>

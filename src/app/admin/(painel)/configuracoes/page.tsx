@@ -17,7 +17,12 @@ export default async function Configuracoes() {
         titulo="Configurações"
         descricao="O que muda aqui vale para o site inteiro. As alterações aparecem em até cinco minutos nas páginas públicas."
       />
-      <SettingsForm contato={config.contato} hero={config.hero} pixels={config.pixels} />
+      <SettingsForm
+        contato={config.contato}
+        hero={config.hero}
+        sobre={config.sobre}
+        pixels={config.pixels}
+      />
     </Pagina>
   );
 }

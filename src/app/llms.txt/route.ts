@@ -33,9 +33,14 @@ export async function GET() {
     `> ${DESCRICAO_PADRAO}`,
     "",
     `A ${NOME} é uma assessoria imobiliária de Santarém, no Pará, conduzida pelo corretor Amauri Nobre (${c.creci.startsWith("CRECI") ? c.creci : `CRECI ${c.creci}`}). ` +
-      `O catálogo tem ${facetas.total} imóveis publicados` +
+      `São ${config.sobre.anos_atuacao} anos de atuação e ${config.sobre.imoveis_vendidos} imóveis vendidos. ` +
+      `O catálogo do site tem ${facetas.total} imóveis publicados` +
       (facetas.bairros.length ? ` em ${facetas.bairros.length} bairros` : "") +
       ". O atendimento é feito pelo WhatsApp.",
+    "",
+    config.sobre.apresentacao,
+    "",
+    config.sobre.compromisso,
     "",
     "## Páginas principais",
     "",

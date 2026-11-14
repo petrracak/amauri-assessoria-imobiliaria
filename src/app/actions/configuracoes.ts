@@ -23,6 +23,10 @@ const schema = z.object({
   creci: z.string().trim().max(30),
   hero_titulo: z.string().trim().min(3).max(120),
   hero_subtitulo: z.string().trim().max(240),
+  anos_atuacao: z.string().trim().max(10),
+  imoveis_vendidos: z.string().trim().max(20),
+  apresentacao: z.string().trim().max(600),
+  compromisso: z.string().trim().max(600),
   meta_pixel_id: idPixel,
   ga4_id: idPixel,
   gtm_id: idPixel,
@@ -71,6 +75,17 @@ export async function salvarConfig(
       {
         chave: "hero",
         valor: { titulo: d.hero_titulo, subtitulo: d.hero_subtitulo, imagem: null },
+        publico: true,
+        updated_by: perfil.id,
+      },
+      {
+        chave: "sobre",
+        valor: {
+          anos_atuacao: d.anos_atuacao,
+          imoveis_vendidos: d.imoveis_vendidos,
+          apresentacao: d.apresentacao,
+          compromisso: d.compromisso,
+        },
         publico: true,
         updated_by: perfil.id,
       },

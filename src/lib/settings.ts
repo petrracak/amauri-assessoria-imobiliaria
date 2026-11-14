@@ -16,6 +16,18 @@ export type Hero = {
   imagem: string | null;
 };
 
+/**
+ * O que a assessoria diz de si. Fica aqui, e não no código, porque "14 anos"
+ * vira 15 no ano que vem e o número de vendas cresce toda semana — quem
+ * corrige isso é o Amauri, pelo painel.
+ */
+export type Sobre = {
+  anos_atuacao: string;
+  imoveis_vendidos: string;
+  apresentacao: string;
+  compromisso: string;
+};
+
 export type Pixels = {
   meta_pixel_id?: string;
   ga4_id?: string;
@@ -39,6 +51,17 @@ const PADRAO = {
       "Assessoria completa na compra e na venda, do primeiro contato à escritura.",
     imagem: null,
   } satisfies Hero,
+  sobre: {
+    anos_atuacao: "14",
+    imoveis_vendidos: "+3.500",
+    apresentacao:
+      "A Amauri Assessoria Imobiliária é uma das imobiliárias que mais crescem em " +
+      "Santarém e região, reconhecida pelo atendimento próximo e humano em cada " +
+      "negociação.",
+    compromisso:
+      "Comprar um imóvel muda o rumo de uma família. Essa decisão pede mais do que " +
+      "um vendedor: pede alguém que acompanha você até as chaves na mão.",
+  } satisfies Sobre,
   pixels: {} satisfies Pixels,
 };
 
@@ -55,10 +78,11 @@ export async function getConfig() {
     return {
       contato: { ...PADRAO.contato, ...(mapa.get("contato") as object) } as Contato,
       hero: { ...PADRAO.hero, ...(mapa.get("hero") as object) } as Hero,
+      sobre: { ...PADRAO.sobre, ...(mapa.get("sobre") as object) } as Sobre,
       pixels: { ...PADRAO.pixels, ...(mapa.get("pixels") as object) } as Pixels,
     };
   } catch {
-    return PADRAO as { contato: Contato; hero: Hero; pixels: Pixels };
+    return PADRAO as { contato: Contato; hero: Hero; sobre: Sobre; pixels: Pixels };
   }
 }
 

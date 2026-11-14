@@ -13,7 +13,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = metaPagina({
   titulo: "Sobre a assessoria",
   descricao:
-    "Amauri Nobre, corretor em Santarém, no Pará. Assessoria na compra e na venda de imóveis de alto padrão.",
+    "Amauri Assessoria Imobiliária: 14 anos em Santarém, no Pará, e mais de 3.500 imóveis vendidos. Compra e venda com atendimento direto do corretor Amauri Nobre.",
   caminho: "/sobre",
 });
 
@@ -29,35 +29,39 @@ export default async function Sobre() {
         <section className="container-site py-16 lg:py-24">
           <Revela>
             <h1 className="texto-grad max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-lg">
-              <span className="destaque">Assessoria</span> imobiliária em Santarém
+              Uma imobiliária que Santarém confia há{" "}
+              <span className="destaque">{config.sobre.anos_atuacao} anos</span>
             </h1>
           </Revela>
 
           <div className="mt-10 grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
             <div className="space-y-5 text-pretty leading-relaxed text-fg-muted">
+              <p>{config.sobre.apresentacao}</p>
+              <p>{config.sobre.compromisso}</p>
               <p>
-                A Amauri Assessoria Imobiliária atua em Santarém, no Pará, na
-                compra e na venda de casas, apartamentos e terrenos, com foco
-                em imóveis de alto padrão. O responsável é o corretor Amauri
-                Nobre.
-              </p>
-              <p>
-                O catálogo traz a ficha de cada imóvel com dormitórios, suítes,
-                vagas, metragem e fotos. Para marcar uma visita ou tirar uma
-                dúvida, o contato é direto, pelo WhatsApp.
+                A assessoria atua em Santarém, no Pará, na compra e na venda de
+                casas, apartamentos, terrenos e lotes em condomínio. O
+                atendimento é direto com o corretor Amauri Nobre, pelo WhatsApp,
+                do primeiro contato à entrega das chaves.
               </p>
             </div>
 
             <dl className="divide-y divide-border-base border-y border-border-base">
               <div className="flex items-baseline justify-between gap-6 py-4">
-                <dt className="text-sm text-fg-muted">Imóveis no catálogo</dt>
-                <dd className="numeros font-titulo text-2xl">{facetas.total}</dd>
+                <dt className="text-sm text-fg-muted">Anos de atuação</dt>
+                <dd className="numeros font-titulo text-2xl">
+                  {config.sobre.anos_atuacao}
+                </dd>
               </div>
               <div className="flex items-baseline justify-between gap-6 py-4">
-                <dt className="text-sm text-fg-muted">Bairros atendidos</dt>
+                <dt className="text-sm text-fg-muted">Imóveis vendidos</dt>
                 <dd className="numeros font-titulo text-2xl">
-                  {facetas.bairros.length}
+                  {config.sobre.imoveis_vendidos}
                 </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-6 py-4">
+                <dt className="text-sm text-fg-muted">Imóveis no site agora</dt>
+                <dd className="numeros font-titulo text-2xl">{facetas.total}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-6 py-4">
                 <dt className="text-sm text-fg-muted">Registro profissional</dt>
@@ -75,8 +79,8 @@ export default async function Sobre() {
 
         <section className="campo-tinta linha-encontro">
           <div className="container-site max-w-2xl py-16 lg:py-24">
-            <h2 className="text-balance font-titulo text-display-sm">
-              Procura algo que não está no site?
+            <h2 className="texto-gelo text-balance font-titulo text-display-sm">
+              Procura algo que <span className="destaque">não está no site?</span>
             </h2>
             <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
               Deixe seu WhatsApp. Quando entrar um imóvel com o perfil que você

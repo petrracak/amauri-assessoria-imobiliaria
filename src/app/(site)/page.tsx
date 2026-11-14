@@ -205,27 +205,41 @@ export default async function Home() {
         <section className="border-y border-border-base bg-bg-subtle">
           <div className="container-site grid gap-12 py-20 lg:grid-cols-2 lg:gap-20 lg:py-28">
             <Revela>
-              <h2 className="texto-tinta max-w-[20ch] text-balance font-titulo text-display-sm lg:text-display-md">
-                Amauri Nobre, <span className="destaque">corretor</span> em Santarém
+              <h2 className="texto-tinta max-w-[19ch] text-balance font-titulo text-display-sm lg:text-display-md">
+                Uma imobiliária que Santarém confia há{" "}
+                <span className="destaque">{config.sobre.anos_atuacao} anos</span>
               </h2>
+
               <div className="mt-6 max-w-[48ch] space-y-4 text-pretty leading-relaxed text-fg-muted">
-                <p>
-                  Assessoria na compra e na venda de casas, apartamentos e
-                  terrenos em Santarém, no Pará. O atendimento é direto com o
-                  Amauri, pelo WhatsApp.
-                </p>
-                <p>
-                  Cada anúncio traz a ficha do imóvel com dormitórios, vagas,
-                  metragem e fotos, para você saber o que esperar antes de
-                  marcar uma visita.
-                </p>
+                <p>{config.sobre.apresentacao}</p>
+                <p>{config.sobre.compromisso}</p>
               </div>
 
-              <p className="numeros mt-8 text-sm text-fg-muted">
+              {/* Os números que sustentam a frase acima: tempo de casa e
+                  vendas. Contagem de catálogo não prova nada — muda a cada
+                  cadastro e não diz nada de quem está do outro lado. */}
+              <dl className="mt-10 flex flex-wrap items-end gap-x-12 gap-y-6 border-t border-border-strong pt-8">
+                <div>
+                  <dd className="numeros font-titulo text-[2.75rem] leading-none">
+                    {config.sobre.anos_atuacao}
+                  </dd>
+                  <dt className="mt-2 text-sm text-fg-muted">anos de atuação</dt>
+                </div>
+                <div>
+                  <dd className="numeros font-titulo text-[2.75rem] leading-none">
+                    {config.sobre.imoveis_vendidos}
+                  </dd>
+                  <dt className="mt-2 text-sm text-fg-muted">imóveis vendidos</dt>
+                </div>
+              </dl>
+
+              {/* O CRECI é um registro, não uma quantidade: ao lado dos
+                  números grandes ele disputava a atenção sem dizer mais. */}
+              <p className="numeros mt-5 text-sm text-fg-muted">
                 CRECI {config.contato.creci}
               </p>
 
-              <LinkSeta href="/sobre" className="mt-5">
+              <LinkSeta href="/sobre" className="mt-8">
                 Conhecer a assessoria
               </LinkSeta>
             </Revela>
