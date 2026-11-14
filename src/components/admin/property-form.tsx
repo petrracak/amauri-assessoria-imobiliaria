@@ -1,8 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
-import { useFormStatus } from "react-dom";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 
 import { salvarImovel, type EstadoImovel } from "@/app/actions/imoveis";
 import {
@@ -14,6 +13,8 @@ import {
   botao,
   campo,
 } from "@/components/admin/ui";
+import { SeletorFotos } from "@/components/admin/seletor-fotos";
+import { enviarFotos } from "@/lib/enviar-fotos";
 import { cn } from "@/lib/utils";
 
 const TIPOS = [
@@ -34,6 +35,7 @@ export type ImovelForm = {
   bairro?: string | null;
   cidade?: string;
   endereco?: string | null;
+  mapa_url?: string | null;
   descricao?: string | null;
   badge?: string | null;
   preco?: number | null;
@@ -57,11 +59,10 @@ const NUMEROS = [
   { nome: "area_total", rotulo: "Área total (m²)" },
 ] as const;
 
-function Salvar({ novo }: { novo: boolean }) {
-  const { pending } = useFormStatus();
+function Salvar({ novo, pendente, enviando }: { novo: boolean; pendente: boolean; enviando: boolean }) {
   return (
-    <button type="submit" disabled={pending} className={cn(botao.primario, "flex-1 sm:flex-none")}>
-      {pending ? "Salvando…" : novo ? "Cadastrar imóvel" : "Salvar alterações"}
+    <button type="submit" disabled={pendente} className={cn(botao.primario, "flex-1 sm:flex-none")}>
+      {enviando ? "Enviando fotos…" : pendente ? "Salvando…" : novo ? "Cadastrar imóvel" : "Salvar alterações"}
     </button>
   );
 }
@@ -69,9 +70,46 @@ function Salvar({ novo }: { novo: boolean }) {
 export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
   const novo = !imovel?.id;
   const router = useRouter();
-  const [estado, acao] = useActionState<EstadoImovel, FormData>(salvarImovel, {
-    ok: false,
-  });
+
+  // As fotos escolhidas ficam num ref: a ação abaixo roda depois do envio e
+  // precisa da lista mais recente, não da que existia quando ela foi criada.
+  const fotos = useRef<File[]>([]);
+  const [progresso, setProgresso] = useState<{ feitas: number; total: number } | null>(null);
+  const [, iniciar] = useTransition();
+
+  const [estado, acao, pendente] = useActionState<EstadoImovel, FormData>(
+    async (anterior, dados) => {
+      const resultado = await salvarImovel(anterior, dados);
+
+      // Imóvel novo: com o cadastro salvo já existe id e referência, então as
+      // fotos escolhidas sobem logo em seguida, na mesma tela.
+      if (!resultado.ok || !novo || !resultado.id || !resultado.ref || fotos.current.length === 0) {
+        return resultado;
+      }
+
+      const envio = await enviarFotos({
+        propertyId: resultado.id,
+        refImovel: resultado.ref,
+        arquivos: fotos.current,
+        aoProgresso: (feitas, total) => setProgresso({ feitas, total }),
+      });
+      setProgresso(null);
+
+      return envio.erro
+        ? { ...resultado, mensagem: `Imóvel cadastrado, mas nem todas as fotos subiram: ${envio.erro} Complete na aba Fotos.` }
+        : resultado;
+    },
+    { ok: false },
+  );
+
+  // Envio manual, e não <form action>: o React 19 limpa todos os campos de um
+  // formulário com action quando ele termina — inclusive quando falha. Um link
+  // de mapa inválido apagaria o cadastro inteiro.
+  function aoEnviar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const dados = new FormData(e.currentTarget);
+    iniciar(() => acao(dados));
+  }
 
   // Depois de cadastrar, segue para a edição — é lá que entram as fotos.
   useEffect(() => {
@@ -83,8 +121,18 @@ export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
   const erro = (c: string) => estado.erros?.[c];
 
   return (
-    <form action={acao} className="space-y-4">
+    <form onSubmit={aoEnviar} className="space-y-4">
       {imovel?.id ? <input type="hidden" name="id" value={imovel.id} /> : null}
+
+      {novo ? (
+        <SeletorFotos
+          aoMudar={(arquivos) => {
+            fotos.current = arquivos;
+          }}
+          progresso={progresso}
+          travado={pendente}
+        />
+      ) : null}
 
       <Cartao titulo="Anúncio">
         <div className="grid gap-5">
@@ -144,6 +192,24 @@ export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
             className="sm:col-span-2"
           >
             <input id="endereco" name="endereco" defaultValue={imovel?.endereco ?? ""} className={campo} />
+          </Campo>
+
+          <Campo
+            nome="mapa_url"
+            rotulo="Link do Google Maps"
+            dica="No Google Maps, abra o imóvel, toque em Compartilhar e copie o link. O mapa aparece na página do imóvel, junto com o endereço."
+            erro={erro("mapa_url")}
+            className="sm:col-span-2"
+          >
+            <input
+              id="mapa_url"
+              name="mapa_url"
+              inputMode="url"
+              autoComplete="off"
+              defaultValue={imovel?.mapa_url ?? ""}
+              placeholder="https://maps.app.goo.gl/..."
+              className={campo}
+            />
           </Campo>
         </div>
       </Cartao>
@@ -239,7 +305,7 @@ export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
         mensagem={estado.mensagem ?? (estado.erros ? "Confira os campos marcados em vermelho." : undefined)}
         tom={estado.ok ? "sucesso" : estado.mensagem || estado.erros ? "erro" : "neutro"}
       >
-        <Salvar novo={novo} />
+        <Salvar novo={novo} pendente={pendente} enviando={progresso !== null} />
       </BarraSalvar>
     </form>
   );

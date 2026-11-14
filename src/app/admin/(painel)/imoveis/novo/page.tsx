@@ -14,7 +14,7 @@ export default async function NovoImovel() {
       <Cabecalho
         voltar={{ href: "/admin/imoveis", rotulo: "Imóveis" }}
         titulo="Cadastrar imóvel"
-        descricao="Preencha o essencial e salve. As fotos entram na tela seguinte, e o imóvel só vai ao ar quando a situação for No ar."
+        descricao="Escolha as fotos, preencha o essencial e salve tudo de uma vez. O imóvel só vai ao ar quando a situação for No ar."
       />
       <PropertyForm />
     </Pagina>

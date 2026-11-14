@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { exigirAdmin, exigirPerfil } from "@/lib/auth";
+import { embedPorConsulta, resolverMapa } from "@/lib/mapa";
 import { createClient } from "@/lib/supabase/server";
 
 /** "Casa no Cidade Jardim" -> "casa-no-cidade-jardim" */
@@ -33,6 +34,7 @@ const schema = z.object({
   bairro: z.string().trim().max(80).optional(),
   cidade: z.string().trim().min(2).default("Santarém"),
   endereco: z.string().trim().max(200).optional(),
+  mapa_url: z.string().trim().max(2000).optional(),
   descricao: z.string().trim().max(20000).optional(),
   badge: z.string().trim().max(40).optional(),
   preco: numeroOpcional,
@@ -50,6 +52,8 @@ const schema = z.object({
 export type EstadoImovel = {
   ok: boolean;
   id?: string;
+  /** Referência do imóvel (035). O envio de fotos usa como nome da pasta. */
+  ref?: string;
   mensagem?: string;
   erros?: Record<string, string>;
 };
@@ -122,8 +126,30 @@ export async function salvarImovel(
   const { id, ...dados } = resultado.data;
   const supabase = await createClient();
 
+  // O mapa é resolvido aqui, no servidor: link curto precisa de redirecionamento
+  // e a página pública não deve fazer isso a cada visita.
+  let mapa_url: string | null = null;
+  let mapa_embed: string | null = null;
+  let aviso: string | undefined;
+
+  if (dados.mapa_url) {
+    const mapa = await resolverMapa(dados.mapa_url);
+    if (!mapa.ok) return { ok: false, erros: { mapa_url: mapa.erro } };
+    mapa_url = mapa.url;
+    mapa_embed = mapa.embed;
+
+    // Sem coordenada no link, o mapa sai pelo endereço escrito.
+    if (!mapa_embed) {
+      const consulta = [dados.endereco, dados.bairro, dados.cidade].filter(Boolean).join(", ");
+      if (consulta) mapa_embed = embedPorConsulta(consulta);
+      else aviso = " O site vai mostrar só o botão do Google Maps: não deu para montar o mapa a partir desse link.";
+    }
+  }
+
   const campos = {
     ...dados,
+    mapa_url,
+    mapa_embed,
     bairro: dados.bairro || null,
     endereco: dados.endereco || null,
     descricao: dados.descricao || null,
@@ -136,7 +162,7 @@ export async function salvarImovel(
     if (error) return { ok: false, mensagem: `Não deu para salvar: ${error.message}` };
 
     await revalidarImovel(supabase, id);
-    return { ok: true, id, mensagem: "Alterações salvas." };
+    return { ok: true, id, mensagem: `Alterações salvas.${aviso ?? ""}` };
   }
 
   const ref = await proximaRef(supabase);
@@ -151,7 +177,7 @@ export async function salvarImovel(
   if (error) return { ok: false, mensagem: `Não deu para cadastrar: ${error.message}` };
 
   await revalidarImovel(supabase, data.id);
-  return { ok: true, id: data.id, mensagem: "Imóvel cadastrado." };
+  return { ok: true, id: data.id, ref, mensagem: `Imóvel cadastrado.${aviso ?? ""}` };
 }
 
 export async function alterarStatus(id: string, status: "rascunho" | "publicado" | "arquivado") {

@@ -219,6 +219,8 @@ export type Database = {
           destaque: boolean
           dormitorios: number | null
           endereco: string | null
+          mapa_url: string | null
+          mapa_embed: string | null
           id: string
           iptu: number | null
           latitude: number | null
@@ -262,6 +264,8 @@ export type Database = {
           destaque?: boolean
           dormitorios?: number | null
           endereco?: string | null
+          mapa_url?: string | null
+          mapa_embed?: string | null
           id?: string
           iptu?: number | null
           latitude?: number | null
@@ -305,6 +309,8 @@ export type Database = {
           destaque?: boolean
           dormitorios?: number | null
           endereco?: string | null
+          mapa_url?: string | null
+          mapa_embed?: string | null
           id?: string
           iptu?: number | null
           latitude?: number | null

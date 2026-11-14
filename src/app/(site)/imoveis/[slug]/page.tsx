@@ -9,6 +9,7 @@ import { Gallery } from "@/components/site/gallery";
 import { SiteHeader } from "@/components/site/site-header";
 import { PropertyCard } from "@/components/site/property-card";
 import { specsDe, type Spec } from "@/components/site/specs";
+import { embedSeguro, linkSeguro } from "@/lib/mapa";
 import { getImoveis, getImovel } from "@/lib/queries";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
 import { formatPreco } from "@/lib/utils";
@@ -75,6 +76,10 @@ export default async function ImovelPage({ params }: { params: Params }) {
   const doEmpreendimento = caracteristicas.filter((c) => c.grupo === "empreendimento");
 
   const specs = specsDe(imovel);
+
+  // Valida de novo na hora de desenhar: só entra na página o que for do Google.
+  const mapaEmbed = embedSeguro(imovel.mapa_embed);
+  const mapaLink = linkSeguro(imovel.mapa_url);
 
   const semelhantes = (
     await getImoveis({ tipo: imovel.tipo, bairro: imovel.bairro ?? undefined }, 4)
@@ -175,6 +180,41 @@ export default async function ImovelPage({ params }: { params: Params }) {
                   </p>
                 ))}
             </div>
+          </section>
+        ) : null}
+
+        {mapaEmbed || mapaLink ? (
+          <section className="mt-14 max-w-[65ch]">
+            <h2 className="font-display text-display-sm">Localização</h2>
+            <p className="mt-4 text-pretty leading-relaxed text-fg-muted">
+              {[imovel.endereco, imovel.bairro, imovel.cidade].filter(Boolean).join(", ")}
+            </p>
+
+            {mapaEmbed ? (
+              <div className="mt-5 aspect-[4/3] overflow-hidden rounded-2xl border border-border-base bg-bg-subtle sm:aspect-[16/10]">
+                {/* lazy: o mapa fica abaixo da dobra e é pesado; só carrega
+                    quando a pessoa chega perto. */}
+                <iframe
+                  src={mapaEmbed}
+                  title={`Mapa de ${imovel.titulo}`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="size-full border-0"
+                  allowFullScreen
+                />
+              </div>
+            ) : null}
+
+            {mapaLink ? (
+              <a
+                href={mapaLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-accent underline-offset-4 hover:underline"
+              >
+                Abrir no Google Maps
+              </a>
+            ) : null}
           </section>
         ) : null}
 

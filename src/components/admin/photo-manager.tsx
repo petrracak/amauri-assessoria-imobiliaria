@@ -5,56 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 
-import { definirCapa, registrarFotos, removerFoto } from "@/app/actions/imoveis";
+import { definirCapa, removerFoto } from "@/app/actions/imoveis";
 import { Cartao, botao } from "@/components/admin/ui";
-import { createClient } from "@/lib/supabase/client";
+import { enviarFotos } from "@/lib/enviar-fotos";
 import { cn } from "@/lib/utils";
 
 export type Foto = { id: string; url: string; capa: boolean; ordem: number };
-
-const LADO_GRANDE = 1600;
-const LADO_PEQUENO = 640;
-
-/**
- * Gera os dois tamanhos que o site serve, direto no aparelho.
- *
- * Uma foto de celular tem 4–12 MB; depois disso a grande fica em torno de
- * 200 KB e a pequena em 40 KB. Isso muda tudo no upload feito na rua, e
- * mantém o padrão das fotos importadas — o carregador de imagem conta com
- * os dois arquivos existirem.
- */
-async function reduzir(bitmap: ImageBitmap, lado: number, qualidade: number) {
-  const escala = Math.min(1, lado / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * escala);
-  canvas.height = Math.round(bitmap.height * escala);
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-
-  return new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", qualidade),
-  );
-}
-
-async function preparar(arquivo: File) {
-  if (!arquivo.type.startsWith("image/") || arquivo.type === "image/svg+xml") {
-    return null;
-  }
-
-  try {
-    const bitmap = await createImageBitmap(arquivo);
-    const grande = await reduzir(bitmap, LADO_GRANDE, 0.82);
-    const pequeno = await reduzir(bitmap, LADO_PEQUENO, 0.78);
-    bitmap.close();
-
-    if (!grande || !pequeno) return null;
-    return { grande, pequeno };
-  } catch {
-    return null;
-  }
-}
 
 export function PhotoManager({
   propertyId,
@@ -77,58 +33,15 @@ export function PhotoManager({
     if (!lista?.length) return;
     setErro(null);
 
-    const arquivos = Array.from(lista);
-    setEnviando({ feitas: 0, total: arquivos.length });
+    const resultado = await enviarFotos({
+      propertyId,
+      refImovel,
+      arquivos: Array.from(lista),
+      aoProgresso: (feitas, total) => setEnviando({ feitas, total }),
+    });
 
-    const supabase = createClient();
-    const enviadas: { url: string; path: string }[] = [];
-
-    for (const [i, arquivo] of arquivos.entries()) {
-      const versoes = await preparar(arquivo);
-      if (!versoes) {
-        setErro(`${arquivo.name} não é uma imagem que dê para processar.`);
-        break;
-      }
-
-      const base = `${refImovel}/${Date.now()}-${i}`;
-      const caminho = `${base}.webp`;
-
-      // A pequena vai primeiro: se o par não ficar completo, nada é gravado
-      // no banco e o site não aponta para um arquivo que não existe.
-      const pequena = await supabase.storage
-        .from("imoveis")
-        .upload(`${base}-sm.webp`, versoes.pequeno, {
-          contentType: "image/webp",
-          upsert: false,
-        });
-
-      if (pequena.error) {
-        setErro(`Falhou ao enviar ${arquivo.name}: ${pequena.error.message}`);
-        break;
-      }
-
-      const { error } = await supabase.storage
-        .from("imoveis")
-        .upload(caminho, versoes.grande, {
-          contentType: "image/webp",
-          upsert: false,
-        });
-
-      if (error) {
-        setErro(`Falhou ao enviar ${arquivo.name}: ${error.message}`);
-        break;
-      }
-
-      const { data } = supabase.storage.from("imoveis").getPublicUrl(caminho);
-      enviadas.push({ url: data.publicUrl, path: caminho });
-      setEnviando({ feitas: i + 1, total: arquivos.length });
-    }
-
-    if (enviadas.length) {
-      const resposta = await registrarFotos(propertyId, enviadas);
-      if (!resposta.ok) setErro(resposta.mensagem ?? "Erro ao salvar as fotos.");
-      router.refresh();
-    }
+    if (resultado.erro) setErro(resultado.erro);
+    if (resultado.enviadas) router.refresh();
 
     setEnviando(null);
     if (inputGaleria.current) inputGaleria.current.value = "";
