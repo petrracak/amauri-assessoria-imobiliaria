@@ -195,6 +195,15 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
             const responsavel = imovel.responsavel_id
               ? nomePor.get(imovel.responsavel_id)
               : null;
+            // Sem endereço, o título costuma trazer o nome do prédio
+            // ("Edifício Orion Palace"), que o Maps acha. Título genérico
+            // só devolve o bairro, que é o que viria de qualquer jeito.
+            const buscaDoImovel = buscaNoMaps([
+              imovel.endereco || imovel.titulo,
+              imovel.bairro,
+              imovel.cidade,
+            ]);
+
             const podeMarcar =
               imovel.situacao === "disponivel" &&
               imovel.placa !== "com_placa" &&
@@ -250,15 +259,9 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
                   {/* Só na visão de quem veio resolver isso: um atalho que
                       abre o Maps já procurando este imóvel. Achou o prédio,
                       é Compartilhar e colar o link no cadastro. */}
-                  {visao === "sem-mapa" && buscaNoMaps([
-                    imovel.endereco,
-                    imovel.bairro,
-                    imovel.cidade,
-                  ]) ? (
+                  {visao === "sem-mapa" && buscaDoImovel ? (
                     <a
-                      href={
-                        buscaNoMaps([imovel.endereco, imovel.bairro, imovel.cidade])!
-                      }
+                      href={buscaDoImovel}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
