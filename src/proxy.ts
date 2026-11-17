@@ -52,6 +52,16 @@ export async function proxy(request: NextRequest) {
   }
 
   if (login && user) {
+    // Token ainda válido, mas sem perfil ativo do outro lado: exigirPerfil
+    // manda para cá com erro=sem-acesso, e devolver para /admin faria os
+    // dois jogarem a pessoa de um lado para o outro para sempre — é o que
+    // acontece com quem foi suspenso (ou removido) sem ter saído antes.
+    // Aqui a sessão morta é encerrada e o formulário aparece com o aviso.
+    if (request.nextUrl.searchParams.get("erro") === "sem-acesso") {
+      await supabase.auth.signOut({ scope: "local" });
+      return response;
+    }
+
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     url.search = "";
