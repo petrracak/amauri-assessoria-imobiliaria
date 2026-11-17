@@ -82,15 +82,18 @@ export default async function ImovelPage({ params }: { params: Params }) {
   const mapaEmbed = embedSeguro(imovel.mapa_embed);
   const mapaLink = linkSeguro(imovel.mapa_url);
 
-  const enderecoEscrito = [imovel.endereco, imovel.bairro, imovel.cidade, imovel.uf]
-    .filter(Boolean)
-    .join(", ");
-
+  // Rota só quando dá para chegar ao imóvel, e não ao bairro: ou tem
+  // coordenada, ou tem rua e número. Mandar alguém para o meio do bairro
+  // seria pior do que não oferecer nada.
   const rota =
     imovel.latitude && imovel.longitude
       ? rotaGoogle(Number(imovel.latitude), Number(imovel.longitude))
-      : enderecoEscrito
-        ? rotaGooglePorEndereco(enderecoEscrito)
+      : imovel.endereco
+        ? rotaGooglePorEndereco(
+            [imovel.endereco, imovel.bairro, imovel.cidade, imovel.uf]
+              .filter(Boolean)
+              .join(", "),
+          )
         : null;
 
   const semelhantes = (
@@ -205,7 +208,7 @@ export default async function ImovelPage({ params }: { params: Params }) {
           </section>
         ) : null}
 
-        {mapaEmbed || mapaLink ? (
+        {mapaEmbed || mapaLink || rota ? (
           <section className="mt-14 max-w-[65ch]">
             <h2 className="font-titulo text-display-sm">Localização</h2>
             <p className="mt-4 text-pretty leading-relaxed text-fg-muted">

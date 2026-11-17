@@ -161,7 +161,9 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Faixa que rola sozinha no celular: empilhar cinco pílulas em três
+          linhas empurrava o mapa para baixo da dobra, e o mapa é a tela. */}
+      <div className="-mx-4 flex w-[calc(100%+2rem)] items-center gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:w-auto sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden">
         {CATEGORIAS.map((c) => {
           const ligada = ativas.includes(c.chave);
           return (
@@ -171,7 +173,7 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
               aria-pressed={ligada}
               onClick={() => alternar(c.chave)}
               className={cn(
-                "inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors",
+                "inline-flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border px-3.5 text-sm transition-colors",
                 ligada
                   ? "border-border-strong bg-bg-elevated text-fg"
                   : "border-border-base bg-transparent text-fg-subtle",
@@ -198,7 +200,7 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
             value={bairro}
             onChange={(e) => setBairro(e.target.value)}
             aria-label="Filtrar por bairro"
-            className="min-h-11 rounded-full border border-border-base bg-bg-elevated px-4 text-sm text-fg"
+            className="min-h-11 shrink-0 rounded-full border border-border-base bg-bg-elevated px-4 text-sm text-fg"
           >
             <option value="">Todos os bairros</option>
             {bairros.map((b) => (
