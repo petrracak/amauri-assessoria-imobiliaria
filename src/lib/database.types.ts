@@ -213,6 +213,7 @@ export type Database = {
           cidade: string
           cliques_whatsapp: number
           condominio: number | null
+          coordenada_origem: string | null
           created_at: string
           created_by: string | null
           descricao: string | null
@@ -266,6 +267,7 @@ export type Database = {
           cidade?: string
           cliques_whatsapp?: number
           condominio?: number | null
+          coordenada_origem?: string | null
           created_at?: string
           created_by?: string | null
           descricao?: string | null
@@ -319,6 +321,7 @@ export type Database = {
           cidade?: string
           cliques_whatsapp?: number
           condominio?: number | null
+          coordenada_origem?: string | null
           created_at?: string
           created_by?: string | null
           descricao?: string | null

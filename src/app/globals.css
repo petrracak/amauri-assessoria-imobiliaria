@@ -567,12 +567,22 @@ html[data-intro="visto"] .hero-item {
   width: 100%;
   height: 100%;
   border-radius: 9999px;
+  background: var(--cor);
   border: 2px solid #fff;
   box-shadow: 0 1px 5px rgb(0 0 0 / 0.45);
   color: #fff;
   font-size: 0.6875rem;
   font-weight: 600;
   line-height: 1;
+}
+
+/* Pino aproximado: vazado, com o aro na cor. Lê-se de longe como "este
+   aqui é palpite" — ele veio do endereço, e cai na rua, não no número. */
+.pino-aproximado span {
+  background: #fff;
+  border: 3px solid var(--cor);
+  color: var(--cor);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 0.35);
 }
 
 /* Parada do roteiro: um pouco maior, com o número da ordem dentro e um

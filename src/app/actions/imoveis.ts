@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { exigirAdmin, exigirPerfil } from "@/lib/auth";
+import { pontoDoEndereco } from "@/lib/geocodificar";
 import { embedPorConsulta, resolverMapa } from "@/lib/mapa";
 import { createClient } from "@/lib/supabase/server";
 
@@ -145,22 +146,51 @@ export async function salvarImovel(
   let mapa_embed: string | null = null;
   let aviso: string | undefined;
 
-  // Coordenada do pino no mapa do painel.
-  //
-  // Campo de mapa vazio limpa a coordenada. Campo preenchido mas sem
-  // coordenada no link preserva a que já estava: o link curto depende de
-  // um redirecionamento, e uma falha de rede ao salvar o preço não pode
-  // fazer o imóvel desaparecer do mapa.
-  let coordenada: { latitude?: number | null; longitude?: number | null } =
-    dados.mapa_url ? {} : { latitude: null, longitude: null };
+  // Como estava antes: evita refazer a busca por endereço a cada
+  // salvamento e impede que um ponto aproximado cubra uma coordenada que
+  // veio de link.
+  const { data: antes } = id
+    ? await supabase
+        .from("properties")
+        .select("endereco, latitude, coordenada_origem")
+        .eq("id", id)
+        .maybeSingle()
+    : { data: null };
+
+  const pontoPeloEndereco = async () => {
+    const ponto = await pontoDoEndereco({
+      endereco: dados.endereco,
+      bairro: dados.bairro,
+      cidade: dados.cidade,
+      uf: "PA",
+    });
+    return ponto
+      ? { latitude: ponto.lat, longitude: ponto.lng, coordenada_origem: "endereco" }
+      : { latitude: null, longitude: null, coordenada_origem: null };
+  };
+
+  // Coordenada do pino no mapa do painel. O link do Maps dá o lugar; o
+  // endereço dá um ponto da rua, que é palpite e fica marcado como tal.
+  // Objeto vazio quer dizer "não mexe no que já está gravado".
+  let coordenada: {
+    latitude?: number | null;
+    longitude?: number | null;
+    coordenada_origem?: string | null;
+  } = {};
 
   if (dados.mapa_url) {
     const mapa = await resolverMapa(dados.mapa_url);
     if (!mapa.ok) return { ok: false, erros: { mapa_url: mapa.erro } };
     mapa_url = mapa.url;
     mapa_embed = mapa.embed;
+
     if (mapa.lat !== null && mapa.lng !== null) {
-      coordenada = { latitude: mapa.lat, longitude: mapa.lng };
+      coordenada = { latitude: mapa.lat, longitude: mapa.lng, coordenada_origem: "link" };
+    } else if (antes?.coordenada_origem !== "link") {
+      // O link não trouxe coordenada. Em compensação, o endereço preserva
+      // uma de link antiga: falha de rede ao salvar o preço não pode
+      // apagar o pino bom.
+      coordenada = await pontoPeloEndereco();
     }
 
     // Sem coordenada no link, o mapa sai pelo endereço escrito.
@@ -169,6 +199,14 @@ export async function salvarImovel(
       if (consulta) mapa_embed = embedPorConsulta(consulta);
       else aviso = " O site vai mostrar só o botão do Google Maps: não deu para montar o mapa a partir desse link.";
     }
+  } else {
+    // Sem link: o ponto vem do endereço, e é da rua, não do número. Só
+    // vai ao Nominatim quando o endereço mudou ou ainda não há ponto —
+    // salvar o preço não precisa de viagem à internet.
+    const mesmoEndereco = (antes?.endereco ?? "") === (dados.endereco ?? "");
+    const jaTemPonto = antes?.coordenada_origem === "endereco" && antes.latitude !== null;
+
+    coordenada = mesmoEndereco && jaTemPonto ? {} : await pontoPeloEndereco();
   }
 
   const campos = {

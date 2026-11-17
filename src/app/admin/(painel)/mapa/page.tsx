@@ -20,7 +20,8 @@ export default async function MapaDaCarteira() {
       .from("properties")
       .select(
         `id, ref, titulo, tipo, bairro, preco, latitude, longitude,
-         situacao, placa, imagens:property_images (url, ordem)`,
+         situacao, placa, coordenada_origem,
+         imagens:property_images (url, ordem)`,
       )
       .neq("status", "arquivado")
       .not("latitude", "is", null)
@@ -45,19 +46,25 @@ export default async function MapaDaCarteira() {
     situacao: i.situacao,
     placa: i.placa,
     foto: [...(i.imagens ?? [])].sort((a, b) => a.ordem - b.ordem)[0]?.url ?? null,
+    aproximada: i.coordenada_origem === "endereco",
   }));
 
   const faltam = semCoordenada.count ?? 0;
+  const aproximados = imoveis.filter((i) => i.aproximada).length;
+
+  const descricao = [
+    "Cada pino é um imóvel, pela cor da situação.",
+    aproximados ? `${aproximados} são aproximados, pelo endereço.` : "",
+    faltam ? `Faltam ${faltam} sem localização.` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Pagina largura="max-w-6xl">
       <Cabecalho
         titulo="Mapa da carteira"
-        descricao={
-          faltam
-            ? `Cada pino é um imóvel, pela cor da situação. Faltam ${faltam} sem localização.`
-            : "Cada pino é um imóvel, pela cor da situação."
-        }
+        descricao={descricao}
         acoes={
           faltam ? (
             <Link

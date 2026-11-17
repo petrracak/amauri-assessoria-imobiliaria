@@ -38,12 +38,52 @@ export type PinoImovel = {
   situacao: string;
   placa: string;
   foto: string | null;
+  /** Veio do endereço, não do link: é um ponto da rua, não o número. */
+  aproximada: boolean;
 };
 
 /** Centro de Santarém, para quando ainda não há nada para enquadrar. */
 const SANTAREM: [number, number] = [-2.4431, -54.7083];
 
-export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
+/**
+ * Afasta em alguns metros os imóveis que caíram na mesma coordenada.
+ *
+ * Acontece de dois jeitos: dois apartamentos no mesmo prédio, e dois
+ * imóveis na mesma avenida cujo ponto aproximado veio igual. Empilhados,
+ * só o de cima recebe o toque e o outro some do mapa — justamente o
+ * problema de "imóvel que ninguém sabia que tinha". O afastamento é
+ * menor que o erro do próprio ponto, então não inventa precisão.
+ */
+const RAIO_GRAU = 0.00025; // ~28 metros
+
+function espalharIguais(imoveis: PinoImovel[]): PinoImovel[] {
+  const grupos = new Map<string, PinoImovel[]>();
+  for (const i of imoveis) {
+    const chave = `${i.lat.toFixed(5)},${i.lng.toFixed(5)}`;
+    grupos.set(chave, [...(grupos.get(chave) ?? []), i]);
+  }
+
+  const saida: PinoImovel[] = [];
+  for (const grupo of grupos.values()) {
+    if (grupo.length === 1) {
+      saida.push(grupo[0]);
+      continue;
+    }
+    grupo.forEach((imovel, n) => {
+      const angulo = (2 * Math.PI * n) / grupo.length;
+      saida.push({
+        ...imovel,
+        lat: imovel.lat + RAIO_GRAU * Math.sin(angulo),
+        lng: imovel.lng + RAIO_GRAU * Math.cos(angulo),
+      });
+    });
+  }
+  return saida;
+}
+
+export function MapaCarteira({ imoveis: recebidos }: { imoveis: PinoImovel[] }) {
+  const imoveis = useMemo(() => espalharIguais(recebidos), [recebidos]);
+
   const [L, setL] = useState<typeof Leaflet | null>(null);
   const [ativas, setAtivas] = useState<Categoria[]>(CATEGORIAS_INICIAIS);
   const [bairro, setBairro] = useState("");
@@ -155,12 +195,16 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
         // Só entram aqui uma cor da nossa lista e um número que a gente
         // mesmo contou: nada do que a equipe digita toca neste HTML.
         icon: L.divIcon({
-          className: numero ? "pino-mapa pino-parada" : "pino-mapa",
-          html: `<span style="background:${corDaCategoria(categoria)}">${numero ?? ""}</span>`,
+          className: cn(
+            "pino-mapa",
+            numero && "pino-parada",
+            imovel.aproximada && "pino-aproximado",
+          ),
+          html: `<span style="--cor:${corDaCategoria(categoria)}">${numero ?? ""}</span>`,
           iconSize: [lado, lado],
           iconAnchor: [lado / 2, lado / 2],
         }),
-        title: `${imovel.titulo} — ${rotuloDaCategoria(categoria)}`,
+        title: `${imovel.titulo} — ${rotuloDaCategoria(categoria)}${imovel.aproximada ? " (local aproximado)" : ""}`,
         alt: `${imovel.titulo} — ${rotuloDaCategoria(categoria)}`,
         keyboard: true,
       });
@@ -295,6 +339,13 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                       {rotuloDaCategoria(categoriaDoImovel(selecionado))}
                     </Selo>
                   </div>
+
+                  {selecionado.aproximada ? (
+                    <p className="mt-1.5 text-xs leading-snug text-amber-700 dark:text-amber-300">
+                      Local aproximado: o ponto é da rua, não do número. Cole o
+                      link do Maps no cadastro para acertar.
+                    </p>
+                  ) : null}
                 </div>
 
                 <button
