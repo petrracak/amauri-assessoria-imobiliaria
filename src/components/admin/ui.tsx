@@ -110,13 +110,21 @@ export function Segmentos({
   nome,
   opcoes,
   valor,
+  className,
 }: {
   nome: string;
-  opcoes: { valor: string; rotulo: string }[];
+  opcoes: readonly { valor: string; rotulo: string }[];
   valor: string;
+  /** Para quebrar em duas linhas quando há opção demais para o celular. */
+  className?: string;
 }) {
   return (
-    <div className="mt-1.5 grid auto-cols-fr grid-flow-col gap-1.5 rounded-xl bg-bg-subtle p-1">
+    <div
+      className={cn(
+        "mt-1.5 grid auto-cols-fr grid-flow-col gap-1.5 rounded-xl bg-bg-subtle p-1",
+        className,
+      )}
+    >
       {opcoes.map((o) => (
         <label key={o.valor} className="min-w-0 cursor-pointer">
           <input
@@ -248,6 +256,7 @@ export function Cartao({
 const TONS = {
   verde: "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300",
   ambar: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+  vermelho: "bg-red-500/12 text-red-700 dark:text-red-300",
   cinza: "bg-fg-subtle/15 text-fg-muted",
   azul: "bg-accent/12 text-accent",
 } as const;
@@ -280,6 +289,66 @@ export function SeloSituacao({ situacao }: { situacao: string }) {
   const rotulo =
     situacao === "publicado" ? "No ar" : situacao === "rascunho" ? "Rascunho" : "Arquivado";
   return <Selo tom={tom}>{rotulo}</Selo>;
+}
+
+/* ------------------------------------------------- gestão interna */
+
+/**
+ * Situação do negócio e situação da placa. As duas listas moram aqui para
+ * que os botões do cadastro, os filtros da lista e as cores do mapa nunca
+ * discordem entre si.
+ */
+export const SITUACOES = [
+  { valor: "disponivel", rotulo: "Disponível" },
+  { valor: "negociacao", rotulo: "Em negociação" },
+  { valor: "vendido", rotulo: "Vendido" },
+  { valor: "alugado", rotulo: "Alugado" },
+] as const;
+
+export const PLACAS = [
+  { valor: "sem_placa", rotulo: "Sem placa" },
+  { valor: "pendente", rotulo: "Pendente" },
+  { valor: "com_placa", rotulo: "Com placa" },
+] as const;
+
+export type Situacao = (typeof SITUACOES)[number]["valor"];
+export type Placa = (typeof PLACAS)[number]["valor"];
+
+const TOM_SITUACAO: Record<Situacao, keyof typeof TONS> = {
+  disponivel: "verde",
+  negociacao: "azul",
+  vendido: "cinza",
+  alugado: "cinza",
+};
+
+const TOM_PLACA: Record<Placa, keyof typeof TONS> = {
+  com_placa: "verde",
+  pendente: "ambar",
+  sem_placa: "vermelho",
+};
+
+export function rotuloSituacao(situacao: string) {
+  return SITUACOES.find((s) => s.valor === situacao)?.rotulo ?? situacao;
+}
+
+export function rotuloPlaca(placa: string) {
+  return PLACAS.find((p) => p.valor === placa)?.rotulo ?? placa;
+}
+
+/**
+ * Nada aparece para "disponível": é o estado normal de quase toda a
+ * carteira, e um selo em cada cartão só faria ruído. O selo existe para
+ * avisar que este imóvel saiu do normal.
+ */
+export function SeloNegocio({ situacao }: { situacao: string }) {
+  if (situacao === "disponivel") return null;
+  const tom = TOM_SITUACAO[situacao as Situacao] ?? "cinza";
+  return <Selo tom={tom}>{rotuloSituacao(situacao)}</Selo>;
+}
+
+export function SeloPlaca({ placa }: { placa: string }) {
+  const tom = TOM_PLACA[placa as Placa] ?? "cinza";
+  return <Selo tom={tom}>{rotuloPlaca(placa)}</Selo>;
 }
 
 /**

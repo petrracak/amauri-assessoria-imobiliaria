@@ -48,6 +48,21 @@ function coordenadas(texto: string) {
   return null;
 }
 
+/**
+ * A mesma coordenada, em número, para gravar no banco e desenhar o pino no
+ * mapa interno. Fora da faixa possível é lixo — link estranho ou regex que
+ * pegou outro número do endereço — e vale mais não ter pino do que ter um
+ * pino no meio do oceano.
+ */
+function paraNumeros(coord: string | null) {
+  if (!coord) return { lat: null, lng: null };
+  const [lat, lng] = coord.split(",").map(Number);
+  const valido =
+    Number.isFinite(lat) && Number.isFinite(lng) &&
+    Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+  return valido ? { lat, lng } : { lat: null, lng: null };
+}
+
 /** Texto de busca, quando o link não traz coordenada. */
 function consultaDoLink(u: URL) {
   const q = u.searchParams.get("q") ?? u.searchParams.get("query");
@@ -77,7 +92,14 @@ export function embedPorConsulta(consulta: string) {
 }
 
 export type ResultadoMapa =
-  | { ok: true; url: string | null; embed: string | null }
+  | {
+      ok: true;
+      url: string | null;
+      embed: string | null;
+      /** Coordenada do pino, quando o link traz uma. Alimenta o mapa do painel. */
+      lat: number | null;
+      lng: number | null;
+    }
   | { ok: false; erro: string };
 
 const MENSAGEM_INVALIDO =
@@ -85,7 +107,7 @@ const MENSAGEM_INVALIDO =
 
 export async function resolverMapa(entrada: string): Promise<ResultadoMapa> {
   const bruto = extrairEndereco(entrada);
-  if (!bruto) return { ok: true, url: null, embed: null };
+  if (!bruto) return { ok: true, url: null, embed: null, lat: null, lng: null };
 
   let url: URL;
   try {
@@ -97,7 +119,8 @@ export async function resolverMapa(entrada: string): Promise<ResultadoMapa> {
 
   // Já é o endereço de incorporação: vale como está.
   if (url.pathname.startsWith("/maps/embed")) {
-    return { ok: true, url: url.toString(), embed: url.toString() };
+    const { lat, lng } = paraNumeros(coordenadas(url.toString()));
+    return { ok: true, url: url.toString(), embed: url.toString(), lat, lng };
   }
 
   // Segue o link curto, no máximo 5 saltos, sempre dentro do Google.
@@ -121,11 +144,14 @@ export async function resolverMapa(entrada: string): Promise<ResultadoMapa> {
 
   const coord = coordenadas(atual.toString());
   const consulta = coord ?? consultaDoLink(atual);
+  const { lat, lng } = paraNumeros(coord);
 
   return {
     ok: true,
     url: url.toString(),
     embed: consulta ? embedPorConsulta(consulta) : null,
+    lat,
+    lng,
   };
 }
 

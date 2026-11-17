@@ -4,9 +4,18 @@ import { notFound, redirect } from "next/navigation";
 
 import { apagarImovel } from "@/app/actions/imoveis";
 import { Abas } from "@/components/admin/abas";
+import { HistoricoImovel, type EventoImovel } from "@/components/admin/historico-imovel";
 import { PhotoManager } from "@/components/admin/photo-manager";
 import { PropertyForm } from "@/components/admin/property-form";
-import { Cabecalho, Cartao, Pagina, SeloSituacao, botao } from "@/components/admin/ui";
+import {
+  Cabecalho,
+  Cartao,
+  Pagina,
+  SeloNegocio,
+  SeloPlaca,
+  SeloSituacao,
+  botao,
+} from "@/components/admin/ui";
 import { exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,6 +36,16 @@ export default async function EditarImovel({ params }: { params: Params }) {
 
   if (!imovel) notFound();
 
+  const [{ data: equipe }, { data: eventos }] = await Promise.all([
+    supabase.rpc("equipe_nomes"),
+    supabase
+      .from("property_events")
+      .select("id, campo, de, para, nota, created_at, autor:profiles (nome)")
+      .eq("property_id", id)
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+
   const fotos = [...(imovel.imagens ?? [])].sort((a, b) => a.ordem - b.ordem);
 
   async function apagar() {
@@ -44,6 +63,8 @@ export default async function EditarImovel({ params }: { params: Params }) {
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="numeros">Ref. {imovel.ref}</span>
             <SeloSituacao situacao={imovel.status} />
+            <SeloNegocio situacao={imovel.situacao} />
+            <SeloPlaca placa={imovel.placa} />
           </span>
         }
         acoes={
@@ -58,12 +79,21 @@ export default async function EditarImovel({ params }: { params: Params }) {
 
       <Abas
         abas={[
-          { id: "dados", rotulo: "Dados", conteudo: <PropertyForm imovel={imovel} /> },
+          {
+            id: "dados",
+            rotulo: "Dados",
+            conteudo: <PropertyForm imovel={imovel} equipe={equipe ?? []} />,
+          },
           {
             id: "fotos",
             rotulo: "Fotos",
             contagem: fotos.length,
             conteudo: <PhotoManager propertyId={imovel.id} refImovel={imovel.ref} fotos={fotos} />,
+          },
+          {
+            id: "historico",
+            rotulo: "Histórico",
+            conteudo: <HistoricoImovel eventos={(eventos ?? []) as unknown as EventoImovel[]} />,
           },
         ]}
       />

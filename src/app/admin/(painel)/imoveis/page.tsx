@@ -2,11 +2,14 @@ import { Building2, Plus, Search, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { BotaoPlaca } from "@/components/admin/botao-placa";
 import {
   Cabecalho,
   Filtros,
   Pagina,
   Selo,
+  SeloNegocio,
+  SeloPlaca,
   SeloSituacao,
   Vazio,
   botao,
@@ -27,6 +30,20 @@ const STATUS = [
   { chave: "arquivado", rotulo: "Arquivados" },
 ];
 
+/**
+ * Cada visão responde a uma pergunta que a equipe faz de verdade — e a
+ * primeira delas é a que motivou tudo isto: onde ainda falta placa.
+ */
+const VISOES = [
+  { chave: "", rotulo: "Tudo" },
+  { chave: "sem-placa", rotulo: "Precisam de placa" },
+  { chave: "placa-pendente", rotulo: "Placa pendente" },
+  { chave: "com-placa", rotulo: "Com placa" },
+  { chave: "negociacao", rotulo: "Em negociação" },
+  { chave: "fora", rotulo: "Vendidos e alugados" },
+  { chave: "sem-mapa", rotulo: "Sem localização" },
+];
+
 type Params = Promise<Record<string, string | string[] | undefined>>;
 
 export default async function AdminImoveis({ searchParams }: { searchParams: Params }) {
@@ -41,32 +58,80 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
     ? (bruto as (typeof VALIDOS)[number])
     : "";
 
+  const pedida = typeof params.visao === "string" ? params.visao : "";
+  const visao = VISOES.some((v) => v.chave === pedida && v.chave) ? pedida : "";
+
   const supabase = await createClient();
+
   let q = supabase
     .from("properties")
     .select(
-      "id, ref, slug, titulo, tipo, bairro, preco, status, destaque, updated_at, imagens:property_images (url, ordem)",
+      `id, ref, slug, titulo, tipo, bairro, preco, status, destaque, updated_at,
+       situacao, placa, placa_instalada_em, responsavel_id, latitude,
+       imagens:property_images (url, ordem)`,
     );
 
   if (status) q = q.eq("status", status);
   if (busca) q = q.ilike("titulo", `%${busca}%`);
 
-  const { data: imoveis } = await q.order("updated_at", { ascending: false }).limit(200);
-  const total = imoveis?.length ?? 0;
+  switch (visao) {
+    case "sem-placa":
+      q = q.eq("situacao", "disponivel").eq("placa", "sem_placa").neq("status", "arquivado");
+      break;
+    case "placa-pendente":
+      q = q.eq("placa", "pendente");
+      break;
+    case "com-placa":
+      q = q.eq("placa", "com_placa");
+      break;
+    case "negociacao":
+      q = q.eq("situacao", "negociacao");
+      break;
+    case "fora":
+      q = q.in("situacao", ["vendido", "alugado"]);
+      break;
+    case "sem-mapa":
+      q = q.is("latitude", null).neq("status", "arquivado");
+      break;
+  }
 
-  const hrefStatus = (chave: string) => {
+  // Arquivado fica fora das duas contagens: imóvel que saiu da carteira não
+  // precisa de placa nem de pino no mapa.
+  const [{ data: imoveis }, semPlaca, semMapa, { data: equipe }] = await Promise.all([
+    q.order("updated_at", { ascending: false }).limit(200),
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .eq("situacao", "disponivel")
+      .eq("placa", "sem_placa")
+      .neq("status", "arquivado"),
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .is("latitude", null)
+      .neq("status", "arquivado"),
+    supabase.rpc("equipe_nomes"),
+  ]);
+
+  const total = imoveis?.length ?? 0;
+  const nomePor = new Map((equipe ?? []).map((p) => [p.id, p.nome]));
+
+  const href = (mudanca: { status?: string; visao?: string }) => {
     const qs = new URLSearchParams();
-    if (chave) qs.set("status", chave);
+    const s = mudanca.status ?? status;
+    const v = mudanca.visao ?? visao;
+    if (s) qs.set("status", s);
+    if (v) qs.set("visao", v);
     if (busca) qs.set("busca", busca);
-    const s = qs.toString();
-    return s ? `/admin/imoveis?${s}` : "/admin/imoveis";
+    const texto = qs.toString();
+    return texto ? `/admin/imoveis?${texto}` : "/admin/imoveis";
   };
 
   return (
     <Pagina>
       <Cabecalho
         titulo="Imóveis"
-        descricao={`${total} ${total === 1 ? "imóvel" : "imóveis"}${busca || status ? " neste filtro" : ""}`}
+        descricao={`${total} ${total === 1 ? "imóvel" : "imóveis"}${busca || status || visao ? " neste filtro" : ""}`}
         acoes={
           <Link href="/admin/imoveis/novo" className={cn(botao.primario, "hidden sm:inline-flex")}>
             <Plus className="size-5" strokeWidth={2} />
@@ -89,23 +154,47 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
           className={cn(campo, "!mt-0 !rounded-full pl-12")}
         />
         {status ? <input type="hidden" name="status" value={status} /> : null}
+        {visao ? <input type="hidden" name="visao" value={visao} /> : null}
       </form>
 
-      <Filtros
-        atual={status}
-        itens={STATUS.map((s) => ({ ...s, href: hrefStatus(s.chave) }))}
-      />
+      <div className="space-y-2">
+        <Filtros
+          atual={status}
+          itens={STATUS.map((s) => ({ ...s, href: href({ status: s.chave }) }))}
+        />
+        <Filtros
+          atual={visao}
+          itens={VISOES.map((v) => ({
+            ...v,
+            href: href({ visao: v.chave }),
+            contagem:
+              v.chave === "sem-placa"
+                ? (semPlaca.count ?? 0)
+                : v.chave === "sem-mapa"
+                  ? (semMapa.count ?? 0)
+                  : undefined,
+          }))}
+        />
+      </div>
 
       {imoveis?.length ? (
         <ul className="grid gap-3 lg:grid-cols-2">
           {imoveis.map((imovel) => {
             const capa = [...(imovel.imagens ?? [])].sort((a, b) => a.ordem - b.ordem)[0];
+            const responsavel = imovel.responsavel_id
+              ? nomePor.get(imovel.responsavel_id)
+              : null;
+            const podeMarcar =
+              imovel.situacao === "disponivel" &&
+              imovel.placa !== "com_placa" &&
+              imovel.status !== "arquivado";
+
             return (
-              <li key={imovel.id} className="min-w-0">
-                <Link
-                  href={`/admin/imoveis/${imovel.id}`}
-                  className="flex h-full min-w-0 gap-3 rounded-2xl border border-border-base bg-bg-elevated p-3 shadow-[var(--shadow-card)] transition-colors hover:border-border-strong active:scale-[0.99]"
-                >
+              <li
+                key={imovel.id}
+                className="min-w-0 overflow-hidden rounded-2xl border border-border-base bg-bg-elevated shadow-[var(--shadow-card)] transition-colors focus-within:border-border-strong hover:border-border-strong"
+              >
+                <Link href={`/admin/imoveis/${imovel.id}`} className="flex min-w-0 gap-3 p-3">
                   <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-bg-subtle">
                     {capa ? (
                       <Image src={capa.url} alt="" fill sizes="96px" className="object-cover" />
@@ -141,6 +230,25 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
                     </div>
                   </div>
                 </Link>
+
+                {/* Faixa de gestão: fora do link, para o botão poder ser botão. */}
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 border-t border-border-base px-3 py-2.5">
+                  <SeloPlaca placa={imovel.placa} />
+                  <SeloNegocio situacao={imovel.situacao} />
+
+                  {/* A falta de coordenada não vira aviso em cada cartão: com
+                      a carteira toda sem pino, seriam 34 avisos iguais. Quem
+                      quer resolver isso usa a visão "Sem localização". */}
+                  {responsavel ? (
+                    <span className="truncate text-xs text-fg-muted">{responsavel}</span>
+                  ) : null}
+
+                  {podeMarcar ? (
+                    <div className="ml-auto">
+                      <BotaoPlaca id={imovel.id} />
+                    </div>
+                  ) : null}
+                </div>
               </li>
             );
           })}
@@ -150,8 +258,8 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
           icone={Building2}
           titulo="Nenhum imóvel aqui"
           texto={
-            busca || status
-              ? "Nada com esse filtro. Limpe a busca ou escolha Todos."
+            busca || status || visao
+              ? "Nada com esse filtro. Limpe a busca ou escolha Tudo."
               : "Cadastre o primeiro imóvel para ele aparecer no site."
           }
           acao={

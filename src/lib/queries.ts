@@ -52,6 +52,22 @@ export async function getDestaques(limite = 6) {
   return ordenarImagens((data ?? []) as unknown as ImovelCard[]);
 }
 
+/**
+ * Colunas da ficha. Nomeadas uma a uma, e não "*", por dois motivos: o
+ * visitante só tem permissão nas colunas públicas (migração 0006), então
+ * "*" daria erro; e campos de gestão interna que entrarem depois não
+ * passam a trafegar na página sem alguém decidir isso aqui.
+ */
+const CAMPOS_FICHA = `
+  id, ref, slug, titulo, subtitulo, tipo, listing, status, stage,
+  cidade, uf, bairro, endereco, latitude, longitude, mostrar_endereco,
+  preco, preco_anterior, condominio, iptu, preco_sob_consulta,
+  dormitorios, suites, banheiros, vagas, area_total, area_privativa,
+  descricao, badge, alto_padrao, mobiliado, destaque,
+  meta_title, meta_description, mapa_url, mapa_embed,
+  created_at, updated_at
+`;
+
 export type Ordenacao = "destaque" | "menor-preco" | "maior-preco" | "recentes";
 
 export type FiltroImoveis = {
@@ -115,7 +131,7 @@ export async function getImovel(slug: string) {
   const { data, error } = await supabase
     .from("properties")
     .select(
-      `*, imagens:property_images (url, alt, ordem, largura, altura),
+      `${CAMPOS_FICHA}, imagens:property_images (url, alt, ordem, largura, altura),
        caracteristicas:property_features (features (nome, grupo))`,
     )
     .eq("slug", slug)

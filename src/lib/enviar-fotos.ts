@@ -1,6 +1,6 @@
 "use client";
 
-import { registrarFotos } from "@/app/actions/imoveis";
+import { registrarFotoPlaca, registrarFotos } from "@/app/actions/imoveis";
 import { createClient } from "@/lib/supabase/client";
 
 const LADO_GRANDE = 1600;
@@ -45,6 +45,53 @@ async function preparar(arquivo: File) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Foto da placa instalada — a comprovação de que alguém esteve lá.
+ *
+ * Vai nos dois tamanhos como as fotos de imóvel, mesmo sendo de uso
+ * interno: tudo em imoveis/*.webp tem par, e o /midia conta com isso para
+ * servir a miniatura.
+ */
+export async function enviarFotoPlaca({
+  propertyId,
+  refImovel,
+  arquivo,
+}: {
+  propertyId: string;
+  refImovel: string;
+  arquivo: File;
+}): Promise<{ erro?: string }> {
+  const versoes = await preparar(arquivo);
+  if (!versoes) return { erro: "Esse arquivo não é uma imagem que dê para processar." };
+
+  const supabase = createClient();
+  const base = `placas/${refImovel}/${Date.now()}`;
+  const caminho = `${base}.webp`;
+
+  const pequena = await supabase.storage
+    .from("imoveis")
+    .upload(`${base}-sm.webp`, versoes.pequeno, {
+      contentType: "image/webp",
+      upsert: false,
+    });
+
+  if (pequena.error) return { erro: `Falhou ao enviar: ${pequena.error.message}` };
+
+  const grande = await supabase.storage
+    .from("imoveis")
+    .upload(caminho, versoes.grande, { contentType: "image/webp", upsert: false });
+
+  if (grande.error) return { erro: `Falhou ao enviar: ${grande.error.message}` };
+
+  const { data } = supabase.storage.from("imoveis").getPublicUrl(caminho);
+  const resposta = await registrarFotoPlaca(propertyId, {
+    url: data.publicUrl,
+    path: caminho,
+  });
+
+  return resposta.ok ? {} : { erro: resposta.mensagem ?? "Erro ao salvar a foto." };
 }
 
 export type ResultadoEnvio = { enviadas: number; erro?: string };

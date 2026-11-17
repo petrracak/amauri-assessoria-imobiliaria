@@ -219,22 +219,30 @@ export type Database = {
           destaque: boolean
           dormitorios: number | null
           endereco: string | null
-          mapa_url: string | null
-          mapa_embed: string | null
           id: string
           iptu: number | null
           latitude: number | null
           listing: Database["public"]["Enums"]["listing_kind"]
           longitude: number | null
+          mapa_embed: string | null
+          mapa_url: string | null
           meta_description: string | null
           meta_title: string | null
           mobiliado: string | null
           mostrar_endereco: boolean
           ordem: number
+          placa: Database["public"]["Enums"]["placa_situacao"]
+          placa_foto_path: string | null
+          placa_foto_url: string | null
+          placa_instalada_em: string | null
+          placa_obs: string | null
+          placa_responsavel_id: string | null
           preco: number | null
           preco_anterior: number | null
           preco_sob_consulta: boolean
           ref: string
+          responsavel_id: string | null
+          situacao: Database["public"]["Enums"]["situacao_comercial"]
           slug: string
           stage: Database["public"]["Enums"]["construction_stage"] | null
           status: Database["public"]["Enums"]["property_status"]
@@ -264,22 +272,30 @@ export type Database = {
           destaque?: boolean
           dormitorios?: number | null
           endereco?: string | null
-          mapa_url?: string | null
-          mapa_embed?: string | null
           id?: string
           iptu?: number | null
           latitude?: number | null
           listing?: Database["public"]["Enums"]["listing_kind"]
           longitude?: number | null
+          mapa_embed?: string | null
+          mapa_url?: string | null
           meta_description?: string | null
           meta_title?: string | null
           mobiliado?: string | null
           mostrar_endereco?: boolean
           ordem?: number
+          placa?: Database["public"]["Enums"]["placa_situacao"]
+          placa_foto_path?: string | null
+          placa_foto_url?: string | null
+          placa_instalada_em?: string | null
+          placa_obs?: string | null
+          placa_responsavel_id?: string | null
           preco?: number | null
           preco_anterior?: number | null
           preco_sob_consulta?: boolean
           ref: string
+          responsavel_id?: string | null
+          situacao?: Database["public"]["Enums"]["situacao_comercial"]
           slug: string
           stage?: Database["public"]["Enums"]["construction_stage"] | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -309,22 +325,30 @@ export type Database = {
           destaque?: boolean
           dormitorios?: number | null
           endereco?: string | null
-          mapa_url?: string | null
-          mapa_embed?: string | null
           id?: string
           iptu?: number | null
           latitude?: number | null
           listing?: Database["public"]["Enums"]["listing_kind"]
           longitude?: number | null
+          mapa_embed?: string | null
+          mapa_url?: string | null
           meta_description?: string | null
           meta_title?: string | null
           mobiliado?: string | null
           mostrar_endereco?: boolean
           ordem?: number
+          placa?: Database["public"]["Enums"]["placa_situacao"]
+          placa_foto_path?: string | null
+          placa_foto_url?: string | null
+          placa_instalada_em?: string | null
+          placa_obs?: string | null
+          placa_responsavel_id?: string | null
           preco?: number | null
           preco_anterior?: number | null
           preco_sob_consulta?: boolean
           ref?: string
+          responsavel_id?: string | null
+          situacao?: Database["public"]["Enums"]["situacao_comercial"]
           slug?: string
           stage?: Database["public"]["Enums"]["construction_stage"] | null
           status?: Database["public"]["Enums"]["property_status"]
@@ -343,6 +367,68 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_placa_responsavel_id_fkey"
+            columns: ["placa_responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_events: {
+        Row: {
+          autor_id: string | null
+          campo: string
+          created_at: string
+          de: string | null
+          id: string
+          nota: string | null
+          para: string | null
+          property_id: string
+        }
+        Insert: {
+          autor_id?: string | null
+          campo: string
+          created_at?: string
+          de?: string | null
+          id?: string
+          nota?: string | null
+          para?: string | null
+          property_id: string
+        }
+        Update: {
+          autor_id?: string | null
+          campo?: string
+          created_at?: string
+          de?: string | null
+          id?: string
+          nota?: string | null
+          para?: string | null
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_events_autor_id_fkey"
+            columns: ["autor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_events_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
@@ -467,6 +553,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      equipe_nomes: {
+        Args: never
+        Returns: {
+          id: string
+          nome: string
+        }[]
+      }
       f_unaccent: { Args: { "": string }; Returns: string }
       is_admin: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
@@ -475,8 +568,10 @@ export type Database = {
       construction_stage: "lancamento" | "em_construcao" | "pronto"
       lead_status: "novo" | "em_contato" | "convertido" | "descartado"
       listing_kind: "venda" | "aluguel"
+      placa_situacao: "sem_placa" | "pendente" | "com_placa"
       post_status: "rascunho" | "publicado"
       property_status: "rascunho" | "publicado" | "arquivado"
+      situacao_comercial: "disponivel" | "negociacao" | "vendido" | "alugado"
       user_role: "admin" | "corretor"
     }
     CompositeTypes: {
@@ -608,8 +703,10 @@ export const Constants = {
       construction_stage: ["lancamento", "em_construcao", "pronto"],
       lead_status: ["novo", "em_contato", "convertido", "descartado"],
       listing_kind: ["venda", "aluguel"],
+      placa_situacao: ["sem_placa", "pendente", "com_placa"],
       post_status: ["rascunho", "publicado"],
       property_status: ["rascunho", "publicado", "arquivado"],
+      situacao_comercial: ["disponivel", "negociacao", "vendido", "alugado"],
       user_role: ["admin", "corretor"],
     },
   },

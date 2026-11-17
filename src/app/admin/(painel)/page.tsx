@@ -14,7 +14,7 @@ import { LeadCard, type Lead } from "@/components/admin/lead-card";
 import { Cabecalho, Cartao, Pagina, SeloSituacao } from "@/components/admin/ui";
 import { exigirPerfil } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatPreco } from "@/lib/utils";
+import { cn, formatPreco } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,18 +24,33 @@ function Numero({
   rotulo,
   valor,
   href,
+  className,
+  alerta,
 }: {
   rotulo: string;
   valor: number;
   href: string;
+  className?: string;
+  /** Pinta o número quando ele é trabalho acumulado, e não só informação. */
+  alerta?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="group min-w-0 rounded-2xl border border-border-base bg-bg-elevated p-4 shadow-[var(--shadow-card)] transition-colors hover:border-border-strong"
+      className={cn(
+        "group min-w-0 rounded-2xl border border-border-base bg-bg-elevated p-4 shadow-[var(--shadow-card)] transition-colors hover:border-border-strong",
+        className,
+      )}
     >
       <div className="flex items-start justify-between gap-2">
-        <p className="numeros font-display text-4xl leading-none">{valor}</p>
+        <p
+          className={cn(
+            "numeros font-display text-4xl leading-none",
+            alerta && valor > 0 && "text-red-600 dark:text-red-400",
+          )}
+        >
+          {valor}
+        </p>
         <ArrowUpRight
           className="size-5 text-fg-subtle transition-colors group-hover:text-accent"
           strokeWidth={1.5}
@@ -88,7 +103,7 @@ export default async function Painel() {
   const perfil = await exigirPerfil();
   const supabase = await createClient();
 
-  const [publicados, rascunhos, leadsNovos, paraChamar, recentes] = await Promise.all([
+  const [publicados, rascunhos, semPlaca, leadsNovos, paraChamar, recentes] = await Promise.all([
     supabase
       .from("properties")
       .select("id", { count: "exact", head: true })
@@ -97,6 +112,12 @@ export default async function Painel() {
       .from("properties")
       .select("id", { count: "exact", head: true })
       .eq("status", "rascunho"),
+    supabase
+      .from("properties")
+      .select("id", { count: "exact", head: true })
+      .eq("situacao", "disponivel")
+      .eq("placa", "sem_placa")
+      .neq("status", "arquivado"),
     supabase
       .from("leads")
       .select("id", { count: "exact", head: true })
@@ -128,10 +149,10 @@ export default async function Painel() {
         descricao="O que está no ar e quem está esperando resposta."
       />
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Link
           href="/admin/leads?status=novo"
-          className="campo-tinta relative col-span-2 flex min-w-0 items-center justify-between gap-4 overflow-hidden rounded-2xl p-5 shadow-[var(--shadow-card)] transition-transform active:scale-[0.99] lg:col-span-1 lg:row-span-1"
+          className="campo-tinta relative col-span-2 flex min-w-0 items-center justify-between gap-4 overflow-hidden rounded-2xl p-5 shadow-[var(--shadow-card)] transition-transform active:scale-[0.99]"
         >
           <div className="min-w-0">
             <p className="numeros font-display text-5xl leading-none">{semContato}</p>
@@ -153,6 +174,13 @@ export default async function Painel() {
           rotulo="em rascunho"
           valor={rascunhos.count ?? 0}
           href="/admin/imoveis?status=rascunho"
+        />
+        <Numero
+          rotulo="disponíveis sem placa"
+          valor={semPlaca.count ?? 0}
+          href="/admin/imoveis?visao=sem-placa"
+          className="max-lg:col-span-2"
+          alerta
         />
       </div>
 

@@ -1,21 +1,28 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 
-import { salvarImovel, type EstadoImovel } from "@/app/actions/imoveis";
+import {
+  registrarFotoPlaca,
+  salvarImovel,
+  type EstadoImovel,
+} from "@/app/actions/imoveis";
 import {
   BarraSalvar,
   Campo,
   Cartao,
   Interruptor,
+  PLACAS,
+  SITUACOES,
   Segmentos,
   Seta,
   botao,
   campo,
 } from "@/components/admin/ui";
 import { SeletorFotos } from "@/components/admin/seletor-fotos";
-import { enviarFotos } from "@/lib/enviar-fotos";
+import { enviarFotoPlaca, enviarFotos } from "@/lib/enviar-fotos";
 import { cn } from "@/lib/utils";
 
 const TIPOS = [
@@ -30,6 +37,7 @@ const TIPOS = [
 
 export type ImovelForm = {
   id?: string;
+  ref?: string;
   titulo?: string;
   tipo?: string;
   status?: string;
@@ -49,7 +57,17 @@ export type ImovelForm = {
   area_privativa?: number | null;
   destaque?: boolean;
   alto_padrao?: boolean;
+
+  /* gestão interna — nada disto sai no site */
+  situacao?: string;
+  responsavel_id?: string | null;
+  placa?: string;
+  placa_instalada_em?: string | null;
+  placa_obs?: string | null;
+  placa_foto_url?: string | null;
 };
+
+export type MembroEquipe = { id: string; nome: string };
 
 const NUMEROS = [
   { nome: "dormitorios", rotulo: "Dormitórios" },
@@ -69,7 +87,103 @@ function Salvar({ novo, pendente, enviando }: { novo: boolean; pendente: boolean
   );
 }
 
-export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
+/**
+ * Foto da placa. Sobe na hora, fora do formulário: quem está na rua com a
+ * placa recém-instalada tira a foto e vai embora, sem tocar em "salvar".
+ */
+function FotoPlaca({
+  propertyId,
+  refImovel,
+  url,
+}: {
+  propertyId: string;
+  refImovel: string;
+  url: string | null;
+}) {
+  const router = useRouter();
+  const [ocupado, setOcupado] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function escolher(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0];
+    e.target.value = ""; // permite escolher o mesmo arquivo de novo
+    if (!arquivo) return;
+
+    setErro(null);
+    setOcupado(true);
+    const resposta = await enviarFotoPlaca({ propertyId, refImovel, arquivo });
+    setOcupado(false);
+
+    if (resposta.erro) setErro(resposta.erro);
+    else router.refresh();
+  }
+
+  async function remover() {
+    setOcupado(true);
+    await registrarFotoPlaca(propertyId, null);
+    setOcupado(false);
+    router.refresh();
+  }
+
+  return (
+    <div className="min-w-0">
+      <span className="block text-sm font-medium">Foto da placa instalada</span>
+
+      <div className="mt-1.5 flex flex-wrap items-center gap-3">
+        {url ? (
+          <Image
+            src={url}
+            alt="Placa instalada neste imóvel"
+            width={80}
+            height={80}
+            className="size-20 shrink-0 rounded-xl border border-border-base object-cover"
+          />
+        ) : null}
+
+        <label
+          className={cn(
+            botao.secundario,
+            "cursor-pointer",
+            ocupado && "pointer-events-none opacity-60",
+          )}
+        >
+          {ocupado ? "Enviando…" : url ? "Trocar foto" : "Enviar foto"}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={escolher}
+            disabled={ocupado}
+            className="sr-only"
+          />
+        </label>
+
+        {url ? (
+          <button type="button" onClick={remover} disabled={ocupado} className={botao.suave}>
+            Remover
+          </button>
+        ) : null}
+      </div>
+
+      <p className="mt-1.5 text-xs text-fg-muted">
+        Sobe na hora, sem precisar salvar o cadastro.
+      </p>
+
+      {erro ? (
+        <p role="alert" className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">
+          {erro}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+export function PropertyForm({
+  imovel,
+  equipe,
+}: {
+  imovel?: ImovelForm;
+  equipe: MembroEquipe[];
+}) {
   const novo = !imovel?.id;
   const router = useRouter();
 
@@ -275,6 +389,89 @@ export function PropertyForm({ imovel }: { imovel?: ImovelForm }) {
             className={cn(campo, "resize-y leading-relaxed")}
           />
         </Campo>
+      </Cartao>
+
+      <Cartao
+        titulo="Gestão interna"
+        descricao="Só a equipe vê. Nada daqui aparece no site."
+      >
+        <div className="grid gap-5">
+          <div>
+            <span className="block text-sm font-medium">Situação do negócio</span>
+            <Segmentos
+              nome="situacao"
+              valor={imovel?.situacao ?? "disponivel"}
+              opcoes={SITUACOES}
+              className="grid-cols-2 grid-flow-row sm:auto-cols-fr sm:grid-flow-col"
+            />
+            <p className="mt-1.5 text-xs text-fg-muted">
+              Não muda o que aparece no site — para tirar do ar, use Situação lá
+              em cima.
+            </p>
+          </div>
+
+          <Campo
+            nome="responsavel_id"
+            rotulo="Responsável"
+            dica="Quem cuida deste imóvel no dia a dia."
+          >
+            <select
+              id="responsavel_id"
+              name="responsavel_id"
+              defaultValue={imovel?.responsavel_id ?? ""}
+              className={campo}
+            >
+              <option value="">Ninguém ainda</option>
+              {equipe.map((pessoa) => (
+                <option key={pessoa.id} value={pessoa.id}>
+                  {pessoa.nome}
+                </option>
+              ))}
+            </select>
+          </Campo>
+
+          <div>
+            <span className="block text-sm font-medium">Placa no imóvel</span>
+            <Segmentos nome="placa" valor={imovel?.placa ?? "sem_placa"} opcoes={PLACAS} />
+          </div>
+
+          <Campo
+            nome="placa_instalada_em"
+            rotulo="Placa instalada em"
+            dica="Deixe vazio se ainda não foi."
+            erro={erro("placa_instalada_em")}
+          >
+            <input
+              id="placa_instalada_em"
+              name="placa_instalada_em"
+              type="date"
+              defaultValue={imovel?.placa_instalada_em ?? ""}
+              className={cn(campo, "numeros")}
+            />
+          </Campo>
+
+          <Campo
+            nome="placa_obs"
+            rotulo="Observações da placa"
+            dica="Ex.: placa torta, o vizinho reclamou, precisa trocar."
+          >
+            <textarea
+              id="placa_obs"
+              name="placa_obs"
+              rows={3}
+              defaultValue={imovel?.placa_obs ?? ""}
+              className={cn(campo, "resize-y leading-relaxed")}
+            />
+          </Campo>
+
+          {imovel?.id && imovel.ref ? (
+            <FotoPlaca
+              propertyId={imovel.id}
+              refImovel={imovel.ref}
+              url={imovel.placa_foto_url ?? null}
+            />
+          ) : null}
+        </div>
       </Cartao>
 
       <Cartao titulo="Destaques">

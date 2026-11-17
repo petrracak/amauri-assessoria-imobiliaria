@@ -47,6 +47,19 @@ const schema = z.object({
   area_privativa: numeroOpcional,
   destaque: z.coerce.boolean().default(false),
   alto_padrao: z.coerce.boolean().default(false),
+
+  // Gestão interna. Não sai no site: a migração 0006 fecha estas colunas
+  // para a chave pública.
+  situacao: z.enum(["disponivel", "negociacao", "vendido", "alugado"]).default("disponivel"),
+  responsavel_id: z.uuid().optional().or(z.literal("")),
+  placa: z.enum(["sem_placa", "pendente", "com_placa"]).default("sem_placa"),
+  placa_instalada_em: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use uma data válida.")
+    .optional()
+    .or(z.literal("")),
+  placa_obs: z.string().trim().max(2000).optional(),
 });
 
 export type EstadoImovel = {
@@ -132,11 +145,23 @@ export async function salvarImovel(
   let mapa_embed: string | null = null;
   let aviso: string | undefined;
 
+  // Coordenada do pino no mapa do painel.
+  //
+  // Campo de mapa vazio limpa a coordenada. Campo preenchido mas sem
+  // coordenada no link preserva a que já estava: o link curto depende de
+  // um redirecionamento, e uma falha de rede ao salvar o preço não pode
+  // fazer o imóvel desaparecer do mapa.
+  let coordenada: { latitude?: number | null; longitude?: number | null } =
+    dados.mapa_url ? {} : { latitude: null, longitude: null };
+
   if (dados.mapa_url) {
     const mapa = await resolverMapa(dados.mapa_url);
     if (!mapa.ok) return { ok: false, erros: { mapa_url: mapa.erro } };
     mapa_url = mapa.url;
     mapa_embed = mapa.embed;
+    if (mapa.lat !== null && mapa.lng !== null) {
+      coordenada = { latitude: mapa.lat, longitude: mapa.lng };
+    }
 
     // Sem coordenada no link, o mapa sai pelo endereço escrito.
     if (!mapa_embed) {
@@ -148,6 +173,7 @@ export async function salvarImovel(
 
   const campos = {
     ...dados,
+    ...coordenada,
     mapa_url,
     mapa_embed,
     bairro: dados.bairro || null,
@@ -155,6 +181,9 @@ export async function salvarImovel(
     descricao: dados.descricao || null,
     badge: dados.badge || null,
     meta_description: dados.descricao ? dados.descricao.slice(0, 155) : null,
+    responsavel_id: dados.responsavel_id || null,
+    placa_instalada_em: dados.placa_instalada_em || null,
+    placa_obs: dados.placa_obs || null,
   };
 
   if (id) {
@@ -188,6 +217,77 @@ export async function alterarStatus(id: string, status: "rascunho" | "publicado"
   await revalidarImovel(supabase, id);
 }
 
+/**
+ * Um toque na lista: placa instalada hoje, por quem está logado.
+ *
+ * É o atalho para o trabalho em lote — quem volta da rua com dez placas
+ * instaladas não devia abrir dez cadastros. O histórico registra sozinho,
+ * pelo gatilho do banco.
+ */
+export async function marcarPlacaInstalada(id: string) {
+  const perfil = await exigirPerfil();
+  const supabase = await createClient();
+
+  // "en-CA" dá o formato que a coluna date espera (2026-11-17), e o fuso
+  // evita marcar ontem para quem está trabalhando à noite em Santarém.
+  const hoje = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Santarem",
+  }).format(new Date());
+
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      placa: "com_placa",
+      placa_instalada_em: hoje,
+      placa_responsavel_id: perfil.id,
+    })
+    .eq("id", id);
+
+  if (error) return { ok: false, mensagem: error.message };
+
+  await revalidarImovel(supabase, id);
+  return { ok: true };
+}
+
+/** Toda foto no bucket de imóveis tem par: a grande e a -sm. */
+function comPar(caminho: string) {
+  return [caminho, caminho.replace(/\.webp$/, "-sm.webp")];
+}
+
+/** Foto comprobatória da placa. `foto` nula apenas remove a que existia. */
+export async function registrarFotoPlaca(
+  propertyId: string,
+  foto: { url: string; path: string } | null,
+) {
+  await exigirPerfil();
+  const supabase = await createClient();
+
+  const { data: antes } = await supabase
+    .from("properties")
+    .select("placa_foto_path")
+    .eq("id", propertyId)
+    .maybeSingle();
+
+  const { error } = await supabase
+    .from("properties")
+    .update({
+      placa_foto_url: foto?.url ?? null,
+      placa_foto_path: foto?.path ?? null,
+    })
+    .eq("id", propertyId);
+
+  if (error) return { ok: false, mensagem: error.message };
+
+  // O arquivo antigo sai só depois de a linha apontar para o novo: ao
+  // contrário, uma falha aqui deixaria o cadastro apontando para o vazio.
+  if (antes?.placa_foto_path && antes.placa_foto_path !== foto?.path) {
+    await supabase.storage.from("imoveis").remove(comPar(antes.placa_foto_path));
+  }
+
+  await revalidarImovel(supabase, propertyId);
+  return { ok: true };
+}
+
 export async function apagarImovel(id: string) {
   // Só admin apaga. A interface já escondia o botão, mas esconder não é
   // autorizar: a ação é chamável direto por quem souber o endereço.
@@ -200,16 +300,20 @@ export async function apagarImovel(id: string) {
     .select("path")
     .eq("property_id", id);
 
-  const caminhos = (fotos ?? []).map((f) => f.path).filter(Boolean) as string[];
-  if (caminhos.length) await supabase.storage.from("imoveis").remove(caminhos);
-
   // O slug precisa ser lido antes da exclusão: depois não há de onde tirar,
   // e sem limpar esse caminho a ficha do imóvel apagado continuaria no ar.
   const { data: antes } = await supabase
     .from("properties")
-    .select("slug")
+    .select("slug, placa_foto_path")
     .eq("id", id)
     .maybeSingle();
+
+  const caminhos = [
+    ...((fotos ?? []).map((f) => f.path).filter(Boolean) as string[]).flatMap(comPar),
+    ...(antes?.placa_foto_path ? comPar(antes.placa_foto_path) : []),
+  ];
+
+  if (caminhos.length) await supabase.storage.from("imoveis").remove(caminhos);
 
   await supabase.from("properties").delete().eq("id", id);
 
@@ -259,7 +363,7 @@ export async function removerFoto(fotoId: string, propertyId: string) {
     .eq("id", fotoId)
     .maybeSingle();
 
-  if (foto?.path) await supabase.storage.from("imoveis").remove([foto.path]);
+  if (foto?.path) await supabase.storage.from("imoveis").remove(comPar(foto.path));
   await supabase.from("property_images").delete().eq("id", fotoId);
 
   // Se a capa saiu, a primeira foto restante assume.
