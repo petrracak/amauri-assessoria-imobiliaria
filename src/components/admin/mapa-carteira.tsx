@@ -248,9 +248,14 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                   <p className="numeros mt-0.5 truncate text-sm text-fg-muted">
                     {selecionado.ref} · {selecionado.bairro ?? "sem bairro"}
                   </p>
-                  <p className="numeros mt-1 text-[0.9375rem] font-semibold">
-                    {formatPreco(selecionado.preco)}
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <p className="numeros text-[0.9375rem] font-semibold">
+                      {formatPreco(selecionado.preco)}
+                    </p>
+                    <Selo tom="cinza">
+                      {rotuloDaCategoria(categoriaDoImovel(selecionado))}
+                    </Selo>
+                  </div>
                 </div>
 
                 <button
@@ -263,12 +268,10 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                 </button>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 border-t border-border-base px-3 py-2.5">
-                <Selo tom="cinza">{rotuloDaCategoria(categoriaDoImovel(selecionado))}</Selo>
-
+              <div className="flex items-center gap-2 border-t border-border-base px-3 py-2.5">
                 <Link
                   href={`/admin/imoveis/${selecionado.id}`}
-                  className="ml-auto inline-flex min-h-11 items-center rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
                 >
                   Abrir cadastro
                 </Link>
@@ -277,7 +280,7 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                   href={rotaGoogle(selecionado.lat, selecionado.lng)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-3.5 text-[0.8125rem] font-medium text-accent-fg transition-opacity hover:opacity-90"
+                  className="ml-auto inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 text-[0.8125rem] font-medium text-accent-fg transition-opacity hover:opacity-90"
                 >
                   <Navigation className="size-4" strokeWidth={2} />
                   Rota
@@ -287,7 +290,7 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                   href={rotaWaze(selecionado.lat, selecionado.lng)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
+                  className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
                 >
                   Waze
                 </a>
