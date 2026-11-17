@@ -1,4 +1,4 @@
-import { Building2, Map as MapIcon, Plus, Search, Star } from "lucide-react";
+import { Building2, Map as MapIcon, MapPin, Plus, Search, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -16,6 +16,7 @@ import {
   campo,
 } from "@/components/admin/ui";
 import { exigirPerfil } from "@/lib/auth";
+import { buscaNoMaps } from "@/lib/mapa";
 import { createClient } from "@/lib/supabase/server";
 import { cn, formatPreco } from "@/lib/utils";
 
@@ -66,8 +67,9 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
   let q = supabase
     .from("properties")
     .select(
-      `id, ref, slug, titulo, tipo, bairro, preco, status, destaque, updated_at,
-       situacao, placa, placa_instalada_em, responsavel_id, latitude,
+      `id, ref, slug, titulo, tipo, bairro, cidade, endereco, preco, status,
+       destaque, updated_at, situacao, placa, placa_instalada_em,
+       responsavel_id, latitude,
        imagens:property_images (url, ordem)`,
     );
 
@@ -245,9 +247,27 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
                   <SeloPlaca placa={imovel.placa} />
                   <SeloNegocio situacao={imovel.situacao} />
 
-                  {/* A falta de coordenada não vira aviso em cada cartão: com
-                      a carteira toda sem pino, seriam 34 avisos iguais. Quem
-                      quer resolver isso usa a visão "Sem localização". */}
+                  {/* Só na visão de quem veio resolver isso: um atalho que
+                      abre o Maps já procurando este imóvel. Achou o prédio,
+                      é Compartilhar e colar o link no cadastro. */}
+                  {visao === "sem-mapa" && buscaNoMaps([
+                    imovel.endereco,
+                    imovel.bairro,
+                    imovel.cidade,
+                  ]) ? (
+                    <a
+                      href={
+                        buscaNoMaps([imovel.endereco, imovel.bairro, imovel.cidade])!
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
+                    >
+                      <MapPin className="size-4" strokeWidth={1.8} />
+                      Procurar no Maps
+                    </a>
+                  ) : null}
+
                   {responsavel ? (
                     <span className="truncate text-xs text-fg-muted">{responsavel}</span>
                   ) : null}

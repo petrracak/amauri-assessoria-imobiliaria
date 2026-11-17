@@ -252,6 +252,20 @@ export function ordenarPorProximidade<T extends { lat: number; lng: number }>(
   return ordem;
 }
 
+/**
+ * Abre o Google Maps já procurando por este imóvel.
+ *
+ * É o primeiro passo de quem vai pegar o link: procura, acha o prédio,
+ * toca em Compartilhar e cola de volta no cadastro. Poupa digitar o
+ * endereço de novo no celular.
+ */
+export function buscaNoMaps(termos: (string | null | undefined)[]) {
+  const consulta = termos.map((t) => t?.trim()).filter(Boolean).join(", ");
+  return consulta
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(consulta)}`
+    : null;
+}
+
 /** Rota a partir de um endereço escrito, para quem não tem coordenada. */
 export function rotaGooglePorEndereco(endereco: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(endereco)}&travelmode=driving`;
