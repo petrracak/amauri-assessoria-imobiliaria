@@ -168,6 +168,27 @@ export function embedSeguro(embed: string | null | undefined) {
   }
 }
 
+/**
+ * Rota até o imóvel, no aplicativo que a pessoa já tem.
+ *
+ * Nada de calcular trajeto aqui: estes endereços abrem o Google Maps ou o
+ * Waze já navegando, e no celular caem direto no aplicativo instalado.
+ * O Waze aceita um destino por vez — roteiro com várias paradas é no
+ * Google Maps.
+ */
+export function rotaGoogle(lat: number, lng: number) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+}
+
+export function rotaWaze(lat: number, lng: number) {
+  return `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+}
+
+/** Rota a partir de um endereço escrito, para quem não tem coordenada. */
+export function rotaGooglePorEndereco(endereco: string) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(endereco)}&travelmode=driving`;
+}
+
 export function linkSeguro(link: string | null | undefined) {
   if (!link) return null;
   try {

@@ -1,3 +1,4 @@
+import { Navigation } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,7 +11,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { PropertyCard } from "@/components/site/property-card";
 import { specsDe, type Spec } from "@/components/site/specs";
 import { JsonLd } from "@/components/site/json-ld";
-import { embedSeguro, linkSeguro } from "@/lib/mapa";
+import { embedSeguro, linkSeguro, rotaGoogle, rotaGooglePorEndereco } from "@/lib/mapa";
 import { getImoveis, getImovel } from "@/lib/queries";
 import { anuncioDoImovel, descricaoDoImovel, imagemAbsoluta, metaPagina, migalhas } from "@/lib/seo";
 import { getConfig, linkWhatsApp } from "@/lib/settings";
@@ -80,6 +81,17 @@ export default async function ImovelPage({ params }: { params: Params }) {
   // Valida de novo na hora de desenhar: só entra na página o que for do Google.
   const mapaEmbed = embedSeguro(imovel.mapa_embed);
   const mapaLink = linkSeguro(imovel.mapa_url);
+
+  const enderecoEscrito = [imovel.endereco, imovel.bairro, imovel.cidade, imovel.uf]
+    .filter(Boolean)
+    .join(", ");
+
+  const rota =
+    imovel.latitude && imovel.longitude
+      ? rotaGoogle(Number(imovel.latitude), Number(imovel.longitude))
+      : enderecoEscrito
+        ? rotaGooglePorEndereco(enderecoEscrito)
+        : null;
 
   const semelhantes = (
     await getImoveis({ tipo: imovel.tipo, bairro: imovel.bairro ?? undefined }, 4)
@@ -215,16 +227,33 @@ export default async function ImovelPage({ params }: { params: Params }) {
               </div>
             ) : null}
 
-            {mapaLink ? (
-              <a
-                href={mapaLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-accent underline-offset-4 hover:underline"
-              >
-                Abrir no Google Maps
-              </a>
-            ) : null}
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+              {/* Quem vai visitar quer sair de onde está e chegar lá, não
+                  olhar o mapa. A rota sai pela coordenada quando existe e
+                  pelo endereço escrito quando não. */}
+              {rota ? (
+                <a
+                  href={rota}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-accent underline-offset-4 hover:underline"
+                >
+                  <Navigation className="size-4" strokeWidth={1.9} />
+                  Como chegar
+                </a>
+              ) : null}
+
+              {mapaLink ? (
+                <a
+                  href={mapaLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-11 items-center text-sm font-medium text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
+                >
+                  Abrir no Google Maps
+                </a>
+              ) : null}
+            </div>
           </section>
         ) : null}
 

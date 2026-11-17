@@ -8,6 +8,7 @@ import {
   House,
   KeyRound,
   LogOut,
+  Map,
   Moon,
   Newspaper,
   PenLine,
@@ -41,6 +42,7 @@ type Item = { href: string; rotulo: string; icone: LucideIcon; admin?: boolean }
 const PRINCIPAIS: Item[] = [
   { href: "/admin", rotulo: "Início", icone: House },
   { href: "/admin/imoveis", rotulo: "Imóveis", icone: Building2 },
+  { href: "/admin/mapa", rotulo: "Mapa", icone: Map },
   { href: "/admin/leads", rotulo: "Leads", icone: Users },
   { href: "/admin/posts", rotulo: "Blog", icone: Newspaper },
 ];
@@ -331,7 +333,14 @@ function AbaInferior({
 
   const gestao = GESTAO.filter((i) => !i.admin || perfil.role === "admin");
   const naFolhaMais =
-    ativoEm(pathname, "/admin/posts") || gestao.some((i) => ativoEm(pathname, i.href));
+    ativoEm(pathname, "/admin/posts") ||
+    ativoEm(pathname, "/admin/mapa") ||
+    gestao.some((i) => ativoEm(pathname, i.href));
+
+  // Por href, e não por posição: a barra do celular tem quatro lugares e a
+  // lista lateral tem mais itens, então um índice fixo quebraria calado na
+  // próxima vez que alguém mexesse na lista.
+  const tab = (href: string) => PRINCIPAIS.find((i) => i.href === href)!;
 
   const aba = (item: Item, contagem = 0) => {
     const ativo = ativoEm(pathname, item.href);
@@ -367,8 +376,8 @@ function AbaInferior({
         className="fixed inset-x-0 bottom-0 z-40 border-t border-border-base bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       >
         <div className="grid h-16 grid-cols-5">
-          {aba(PRINCIPAIS[0])}
-          {aba(PRINCIPAIS[1])}
+          {aba(tab("/admin"))}
+          {aba(tab("/admin/imoveis"))}
 
           <div className="grid place-items-center">
             <button
@@ -381,7 +390,7 @@ function AbaInferior({
             </button>
           </div>
 
-          {aba(PRINCIPAIS[2], leadsNovos)}
+          {aba(tab("/admin/leads"), leadsNovos)}
 
           <button
             type="button"
@@ -437,6 +446,13 @@ function AbaInferior({
           <ChevronRight className="size-5 shrink-0 text-fg-subtle" strokeWidth={1.5} />
         </Link>
 
+        <ItemFolha
+          href="/admin/mapa"
+          icone={Map}
+          rotulo="Mapa da carteira"
+          detalhe="Onde está cada imóvel, e onde falta placa"
+          aoEscolher={fechar}
+        />
         <ItemFolha href="/admin/posts" icone={Newspaper} rotulo="Blog" aoEscolher={fechar} />
         {gestao
           .filter((i) => i.href !== "/admin/conta")

@@ -1,4 +1,4 @@
-import { Building2, Plus, Search, Star } from "lucide-react";
+import { Building2, Map as MapIcon, Plus, Search, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -133,10 +133,19 @@ export default async function AdminImoveis({ searchParams }: { searchParams: Par
         titulo="Imóveis"
         descricao={`${total} ${total === 1 ? "imóvel" : "imóveis"}${busca || status || visao ? " neste filtro" : ""}`}
         acoes={
-          <Link href="/admin/imoveis/novo" className={cn(botao.primario, "hidden sm:inline-flex")}>
-            <Plus className="size-5" strokeWidth={2} />
-            Cadastrar imóvel
-          </Link>
+          <>
+            <Link href="/admin/mapa" className={botao.secundario}>
+              <MapIcon className="size-5" strokeWidth={1.7} />
+              No mapa
+            </Link>
+            <Link
+              href="/admin/imoveis/novo"
+              className={cn(botao.primario, "hidden sm:inline-flex")}
+            >
+              <Plus className="size-5" strokeWidth={2} />
+              Cadastrar imóvel
+            </Link>
+          </>
         }
       />
 
