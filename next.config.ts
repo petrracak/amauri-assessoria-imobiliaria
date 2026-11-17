@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    // Marca que as atualizações de segurança do Next podem ser aplicadas por
+    // agente. É o próprio "next upgrade" que pede este ajuste.
+    agentUpgrade: "security",
+
     // Cache de navegação no aparelho. Páginas do painel prefetchadas
     // (prefetch={true}) valem por static; as visitadas valem por dynamic.
     // Toda alteração feita pelo painel limpa isso (revalidatePath no layout
