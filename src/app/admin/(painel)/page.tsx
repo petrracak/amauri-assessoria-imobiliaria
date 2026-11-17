@@ -1,11 +1,11 @@
 import {
   ArrowUpRight,
   Building2,
+  ChartNoAxesColumn,
   ChevronRight,
   ExternalLink,
-  PenLine,
+  Map,
   Plus,
-  Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -186,8 +186,8 @@ export default async function Painel() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Atalho href="/admin/imoveis/novo" icone={Plus} rotulo="Novo imóvel" />
-        <Atalho href="/admin/posts/novo" icone={PenLine} rotulo="Novo texto" />
-        <Atalho href="/admin/leads" icone={Users} rotulo="Todos os leads" />
+        <Atalho href="/admin/indicadores" icone={ChartNoAxesColumn} rotulo="Indicadores" />
+        <Atalho href="/admin/mapa" icone={Map} rotulo="Mapa da carteira" />
         <Atalho href="/" icone={ExternalLink} rotulo="Abrir o site" externo />
       </div>
 

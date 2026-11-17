@@ -184,6 +184,74 @@ export function rotaWaze(lat: number, lng: number) {
   return `https://www.waze.com/ul?ll=${lat},${lng}&navigate=yes`;
 }
 
+/**
+ * Roteiro com várias paradas, numa abertura só do Google Maps.
+ *
+ * Sem "origin": o aplicativo começa de onde a pessoa está, que é o que
+ * ela quer ao sair para a rua. O endereço do Google aceita nove paradas
+ * mais o destino — daí o teto.
+ */
+export const MAX_PARADAS = 10;
+
+export function rotaComParadas(paradas: { lat: number; lng: number }[]) {
+  if (paradas.length === 0) return null;
+  if (paradas.length === 1) return rotaGoogle(paradas[0].lat, paradas[0].lng);
+
+  const lista = paradas.slice(0, MAX_PARADAS);
+  const destino = lista[lista.length - 1];
+  const meio = lista
+    .slice(0, -1)
+    .map((p) => `${p.lat},${p.lng}`)
+    .join("|");
+
+  return (
+    `https://www.google.com/maps/dir/?api=1&destination=${destino.lat},${destino.lng}` +
+    `&waypoints=${encodeURIComponent(meio)}&travelmode=driving`
+  );
+}
+
+/** Distância aproximada em quilômetros entre dois pontos. */
+function distancia(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const R = 6371;
+  const rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad;
+  const dLng = (b.lng - a.lng) * rad;
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+/**
+ * Põe as paradas na ordem do vizinho mais próximo, partindo da primeira
+ * que a pessoa escolheu.
+ *
+ * Não é a rota ótima — isso é problema do caixeiro viajante, e o Google
+ * não aceita "otimizar" pelo endereço. Mas resolve o que importa num dia
+ * de instalação de placas: não atravessar a cidade duas vezes.
+ */
+export function ordenarPorProximidade<T extends { lat: number; lng: number }>(
+  pontos: T[],
+): T[] {
+  if (pontos.length <= 2) return [...pontos];
+
+  const restantes = [...pontos];
+  const ordem: T[] = [restantes.shift()!];
+
+  while (restantes.length) {
+    const ultimo = ordem[ordem.length - 1];
+    let melhor = 0;
+    for (let i = 1; i < restantes.length; i++) {
+      if (distancia(ultimo, restantes[i]) < distancia(ultimo, restantes[melhor])) {
+        melhor = i;
+      }
+    }
+    ordem.push(restantes.splice(melhor, 1)[0]);
+  }
+
+  return ordem;
+}
+
 /** Rota a partir de um endereço escrito, para quem não tem coordenada. */
 export function rotaGooglePorEndereco(endereco: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(endereco)}&travelmode=driving`;

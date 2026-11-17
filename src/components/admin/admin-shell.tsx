@@ -2,6 +2,7 @@
 
 import {
   Building2,
+  ChartNoAxesColumn,
   ChevronRight,
   Ellipsis,
   ExternalLink,
@@ -43,6 +44,7 @@ const PRINCIPAIS: Item[] = [
   { href: "/admin", rotulo: "Início", icone: House },
   { href: "/admin/imoveis", rotulo: "Imóveis", icone: Building2 },
   { href: "/admin/mapa", rotulo: "Mapa", icone: Map },
+  { href: "/admin/indicadores", rotulo: "Indicadores", icone: ChartNoAxesColumn },
   { href: "/admin/leads", rotulo: "Leads", icone: Users },
   { href: "/admin/posts", rotulo: "Blog", icone: Newspaper },
 ];
@@ -335,6 +337,7 @@ function AbaInferior({
   const naFolhaMais =
     ativoEm(pathname, "/admin/posts") ||
     ativoEm(pathname, "/admin/mapa") ||
+    ativoEm(pathname, "/admin/indicadores") ||
     gestao.some((i) => ativoEm(pathname, i.href));
 
   // Por href, e não por posição: a barra do celular tem quatro lugares e a
@@ -451,6 +454,13 @@ function AbaInferior({
           icone={Map}
           rotulo="Mapa da carteira"
           detalhe="Onde está cada imóvel, e onde falta placa"
+          aoEscolher={fechar}
+        />
+        <ItemFolha
+          href="/admin/indicadores"
+          icone={ChartNoAxesColumn}
+          rotulo="Indicadores"
+          detalhe="A carteira em números"
           aoEscolher={fechar}
         />
         <ItemFolha href="/admin/posts" icone={Newspaper} rotulo="Blog" aoEscolher={fechar} />

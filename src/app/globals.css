@@ -562,12 +562,24 @@ html[data-intro="visto"] .hero-item {
    aro branco se lê sobre rua, telhado e mata — que é o que tem no mapa de
    Santarém. A cor vem da lista em lib/pinos.ts. */
 .pino-mapa span {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   border-radius: 9999px;
   border: 2px solid #fff;
   box-shadow: 0 1px 5px rgb(0 0 0 / 0.45);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Parada do roteiro: um pouco maior, com o número da ordem dentro e um
+   halo para se achar no meio dos outros pinos. */
+.pino-parada span {
+  border-width: 2.5px;
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 0.5), 0 2px 7px rgb(0 0 0 / 0.5);
 }
 
 .pino-mapa {

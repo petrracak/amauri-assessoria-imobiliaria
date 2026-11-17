@@ -3,13 +3,19 @@
 import "leaflet/dist/leaflet.css";
 
 import type * as Leaflet from "leaflet";
-import { Building2, Navigation, X } from "lucide-react";
+import { Building2, Check, Navigation, Plus, Route, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Selo } from "@/components/admin/ui";
-import { rotaGoogle, rotaWaze } from "@/lib/mapa";
+import {
+  MAX_PARADAS,
+  ordenarPorProximidade,
+  rotaComParadas,
+  rotaGoogle,
+  rotaWaze,
+} from "@/lib/mapa";
 import {
   CATEGORIAS,
   CATEGORIAS_INICIAIS,
@@ -42,6 +48,7 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
   const [ativas, setAtivas] = useState<Categoria[]>(CATEGORIAS_INICIAIS);
   const [bairro, setBairro] = useState("");
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
+  const [roteiro, setRoteiro] = useState<string[]>([]);
 
   const divRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<Leaflet.Map | null>(null);
@@ -80,6 +87,21 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
   // Derivado da lista visível, e não guardado à parte: se o imóvel escolhido
   // sair do filtro, o cartão some sozinho, sem efeito nenhum para isso.
   const selecionado = visiveis.find((i) => i.id === selecionadoId) ?? null;
+
+  // As paradas na ordem em que serão percorridas, e o número que cada uma
+  // mostra no pino. A ordem é recalculada a cada inclusão: quem olha o mapa
+  // vê o caminho, não a ordem em que foi clicando.
+  const paradas = useMemo(() => {
+    const escolhidos = roteiro
+      .map((id) => imoveis.find((i) => i.id === id))
+      .filter(Boolean) as PinoImovel[];
+    return ordenarPorProximidade(escolhidos);
+  }, [roteiro, imoveis]);
+
+  const ordemNoRoteiro = useMemo(
+    () => new Map(paradas.map((p, i) => [p.id, i + 1])),
+    [paradas],
+  );
 
   const contagem = useMemo(() => {
     const mapa = new Map<Categoria, number>();
@@ -126,14 +148,17 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
 
     for (const imovel of visiveis) {
       const categoria = categoriaDoImovel(imovel);
+      const numero = ordemNoRoteiro.get(imovel.id);
+      const lado = numero ? 26 : 20;
+
       const marcador = L.marker([imovel.lat, imovel.lng], {
-        // A cor vem da nossa lista, nunca do cadastro: nada do que a equipe
-        // digita entra neste HTML.
+        // Só entram aqui uma cor da nossa lista e um número que a gente
+        // mesmo contou: nada do que a equipe digita toca neste HTML.
         icon: L.divIcon({
-          className: "pino-mapa",
-          html: `<span style="background:${corDaCategoria(categoria)}"></span>`,
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
+          className: numero ? "pino-mapa pino-parada" : "pino-mapa",
+          html: `<span style="background:${corDaCategoria(categoria)}">${numero ?? ""}</span>`,
+          iconSize: [lado, lado],
+          iconAnchor: [lado / 2, lado / 2],
         }),
         title: `${imovel.titulo} — ${rotuloDaCategoria(categoria)}`,
         alt: `${imovel.titulo} — ${rotuloDaCategoria(categoria)}`,
@@ -151,13 +176,27 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
       mapa.fitBounds(L.latLngBounds(pontos), { padding: [40, 40], maxZoom: 16 });
       enquadrou.current = true;
     }
-  }, [L, visiveis]);
+  }, [L, visiveis, ordemNoRoteiro]);
 
   function alternar(chave: Categoria) {
     setAtivas((atuais) =>
       atuais.includes(chave) ? atuais.filter((c) => c !== chave) : [...atuais, chave],
     );
   }
+
+  function alternarParada(id: string) {
+    setRoteiro((atuais) =>
+      atuais.includes(id)
+        ? atuais.filter((x) => x !== id)
+        : atuais.length >= MAX_PARADAS
+          ? atuais
+          : [...atuais, id],
+    );
+  }
+
+  const noRoteiro = selecionado ? roteiro.includes(selecionado.id) : false;
+  const roteiroCheio = roteiro.length >= MAX_PARADAS;
+  const linkRoteiro = rotaComParadas(paradas);
 
   return (
     <div className="space-y-3">
@@ -273,8 +312,35 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
                   href={`/admin/imoveis/${selecionado.id}`}
                   className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-border-strong px-3.5 text-[0.8125rem] font-medium transition-colors hover:border-accent hover:text-accent"
                 >
-                  Abrir cadastro
+                  Cadastro
                 </Link>
+
+                <button
+                  type="button"
+                  onClick={() => alternarParada(selecionado.id)}
+                  disabled={!noRoteiro && roteiroCheio}
+                  aria-pressed={noRoteiro}
+                  title={
+                    noRoteiro
+                      ? "Tirar do roteiro"
+                      : roteiroCheio
+                        ? `O roteiro já tem ${MAX_PARADAS} paradas`
+                        : "Juntar ao roteiro do dia"
+                  }
+                  aria-label={noRoteiro ? "Tirar do roteiro" : "Juntar ao roteiro do dia"}
+                  className={cn(
+                    "grid size-11 shrink-0 place-items-center rounded-full border transition-colors disabled:opacity-40",
+                    noRoteiro
+                      ? "border-accent bg-accent/12 text-accent"
+                      : "border-border-strong text-fg hover:border-accent hover:text-accent",
+                  )}
+                >
+                  {noRoteiro ? (
+                    <Check className="size-[1.1rem]" strokeWidth={2.2} />
+                  ) : (
+                    <Plus className="size-[1.1rem]" strokeWidth={2.2} />
+                  )}
+                </button>
 
                 <a
                   href={rotaGoogle(selecionado.lat, selecionado.lng)}
@@ -299,6 +365,49 @@ export function MapaCarteira({ imoveis }: { imoveis: PinoImovel[] }) {
           </div>
         ) : null}
       </div>
+
+      {/* O roteiro do dia. Fica fora do mapa, embaixo: dentro ele brigaria
+          com o cartão do pino, que também mora no rodapé. */}
+      {paradas.length ? (
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-accent/40 bg-accent/[0.06] p-3">
+          <Route className="size-5 shrink-0 text-accent" strokeWidth={1.8} />
+
+          <p className="min-w-0 text-[0.9375rem]">
+            <span className="font-medium">
+              {paradas.length} {paradas.length === 1 ? "parada" : "paradas"}
+            </span>
+            <span className="text-fg-muted">
+              {paradas.length > 2
+                ? " · na ordem mais curta a partir da primeira"
+                : roteiroCheio
+                  ? " · é o máximo que o Google aceita de uma vez"
+                  : ""}
+            </span>
+          </p>
+
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setRoteiro([])}
+              className="inline-flex min-h-11 items-center rounded-full px-3 text-[0.8125rem] font-medium text-fg-muted transition-colors hover:text-fg"
+            >
+              Limpar
+            </button>
+
+            {linkRoteiro ? (
+              <a
+                href={linkRoteiro}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent px-4 text-[0.8125rem] font-medium text-accent-fg transition-opacity hover:opacity-90"
+              >
+                <Navigation className="size-4" strokeWidth={2} />
+                Abrir no Google Maps
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       <p role="status" className="text-sm text-fg-muted">
         {visiveis.length === imoveis.length
